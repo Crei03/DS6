@@ -2,43 +2,7 @@
 CREATE DATABASE IF NOT EXISTS DS6;
 USE DS6;
 
--- Tabla empleados
-CREATE TABLE empleados (
-    cedula VARCHAR(13) PRIMARY KEY,
-    prefijo VARCHAR(6),
-    tomo VARCHAR(6),
-    asiento VARCHAR(6),
-    nombre1 VARCHAR(25),
-    nombre2 VARCHAR(25),
-    apellido1 VARCHAR(25),
-    apellido2 VARCHAR(25),
-    apellidoc VARCHAR(25),
-    genero INT(1),
-    estado_civil INT(1),
-    tipo_sangre VARCHAR(3),
-    usa_ac INT(1),
-    f_nacimiento DATE,
-    celular INT(8),
-    telefono INT(7),
-    correo VARCHAR(40),
-    provincia VARCHAR(2),
-    distrito VARCHAR(4),
-    corregimiento VARCHAR(6),
-    calle VARCHAR(30),
-    casa VARCHAR(10),
-    comunidad VARCHAR(25),
-    nacionalidad VARCHAR(3),
-    f_contra DATE,
-    cargo VARCHAR(2),
-    departamento VARCHAR(2),
-    estado INT(1),
-    FOREIGN KEY (provincia) REFERENCES provincia(codigo_provincia),
-    FOREIGN KEY (distrito) REFERENCES distrito(codigo_distrito),
-    FOREIGN KEY (corregimiento) REFERENCES corregimiento(codigo_corregimiento),
-    FOREIGN KEY (nacionalidad) REFERENCES nacionalidad(codigo),
-    FOREIGN KEY (cargo) REFERENCES cargo(codigo),
-    FOREIGN KEY (departamento) REFERENCES departamento(codigo)
-);
+
 
 -- Tabla nacionalidad
 CREATE TABLE nacionalidad (
@@ -78,22 +42,7 @@ CREATE TABLE departamento (
     nombre VARCHAR(40)
 );
 
--- Tabla cargo
-CREATE TABLE cargo (
-    dep_codigo VARCHAR(2),
-    codigo VARCHAR(2) PRIMARY KEY,
-    nombre VARCHAR(40),
-    FOREIGN KEY (dep_codigo) REFERENCES departamento(codigo)
-);
 
--- Tabla usuarios
-CREATE TABLE usuarios (
-    id INT PRIMARY KEY,
-    cedula VARCHAR(13),
-    contraseña VARCHAR(18),
-    correo_institucional VARCHAR(40),
-    FOREIGN KEY (cedula) REFERENCES empleados(cedula)
-);
 
 -- Tabla e_eliminados
 CREATE TABLE e_eliminados (
@@ -136,3 +85,62 @@ CREATE TABLE u_eliminados (
     correo_institucional VARCHAR(40),
     f_eliminacion DATE
 );
+
+
+-- Tabla empleados
+CREATE TABLE empleados (
+    cedula VARCHAR(13) PRIMARY KEY,
+    prefijo VARCHAR(6),
+    tomo VARCHAR(6),
+    asiento VARCHAR(6),
+    nombre1 VARCHAR(25),
+    nombre2 VARCHAR(25),
+    apellido1 VARCHAR(25),
+    apellido2 VARCHAR(25),
+    apellidoc VARCHAR(25),
+    genero INT(1),
+    estado_civil INT(1),
+    tipo_sangre VARCHAR(3),
+    usa_ac INT(1),
+    f_nacimiento DATE,
+    celular INT(8),
+    telefono INT(7),
+    correo VARCHAR(40),
+    provincia VARCHAR(2),
+    distrito VARCHAR(4),
+    corregimiento VARCHAR(6),
+    calle VARCHAR(30),
+    casa VARCHAR(10),
+    comunidad VARCHAR(25),
+    nacionalidad VARCHAR(3),
+    f_contra DATE,
+    cargo VARCHAR(2),
+    departamento VARCHAR(2),
+    estado INT(1),
+    FOREIGN KEY (provincia) REFERENCES provincia(codigo_provincia),
+    FOREIGN KEY (distrito) REFERENCES distrito(codigo_distrito),
+    FOREIGN KEY (corregimiento) REFERENCES corregimiento(codigo_corregimiento),
+    FOREIGN KEY (nacionalidad) REFERENCES nacionalidad(codigo),
+    
+    FOREIGN KEY (departamento) REFERENCES departamento(codigo)
+);
+
+-- Tabla usuarios
+CREATE TABLE usuarios (
+    id INT PRIMARY KEY,
+    cedula VARCHAR(13),
+    contraseña VARCHAR(18),
+    correo_institucional VARCHAR(40),
+    FOREIGN KEY (cedula) REFERENCES empleados(cedula)
+);
+
+-- Tabla cargo
+CREATE TABLE cargo (
+    dep_codigo VARCHAR(2),
+    codigo VARCHAR(2) PRIMARY KEY,
+    nombre VARCHAR(40),
+    FOREIGN KEY (dep_codigo) REFERENCES departamento(codigo)
+);
+
+ALTER TABLE empleados
+ADD FOREIGN KEY (cargo) REFERENCES cargo(codigo);
