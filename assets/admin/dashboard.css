@@ -1,0 +1,47 @@
+/* Estilos específicos para el dashboard */
+
+/* Layout principal */
+.main-content {
+    margin-left: 250px;
+    padding: 20px;
+}
+
+/* Encabezado del dashboard */
+.dashboard-header {
+    background-color: var(--color-contenedor);
+    padding: 20px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    box-shadow: var(--sombra-default);
+}
+
+.dashboard-title {
+    font-size: 24px;
+    color: var(--color-titulo);
+    margin-bottom: 10px;
+}
+
+.dashboard-subtitle {
+    font-size: 16px;
+    color: var(--color-texto-secundario);
+}
+
+/* Grid de tarjetas */
+.dashboard-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 20px;
+}
+
+/* Estilos específicos para las tarjetas de dashboard */
+.card-title {
+    font-size: 18px;
+    color: var(--color-titulo);
+    margin-bottom: 15px;
+}
+
+.card-value {
+    font-size: 30px;
+    font-weight: bold;
+    color: var(--color-boton);
+}

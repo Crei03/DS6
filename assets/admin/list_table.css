@@ -1,0 +1,146 @@
+/* Estilos específicos para la tabla de listado */
+
+/* Layout principal */
+.main-content {
+    margin-left: 250px;
+    padding: 20px;
+}
+
+/* Cabecera de la tabla */
+.table-header {
+    background-color: var(--color-contenedor);
+    padding: 20px;
+    border-radius: 8px 8px 0 0;
+    margin-bottom: 0;
+    box-shadow: var(--sombra-default);
+}
+
+.table-title {
+    font-size: 24px;
+    color: var(--color-titulo);
+    margin-bottom: 10px;
+}
+
+.table-subtitle {
+    font-size: 16px;
+    color: var(--color-texto-secundario);
+    margin-bottom: 20px;
+}
+
+/* Buscador y botones */
+.search-container {
+    display: flex;
+    margin-bottom: 10px;
+}
+
+.search-input {
+    flex-grow: 1;
+    padding: 10px;
+    border: 1px solid var(--color-borde);
+    border-radius: 4px 0 0 4px;
+    font-size: 16px;
+}
+
+.search-button {
+    background-color: var(--color-boton);
+    color: white;
+    border: none;
+    border-radius: 0 4px 4px 0;
+    padding: 10px 15px;
+    cursor: pointer;
+}
+
+.add-button {
+    background-color: #2ecc71;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    padding: 10px 15px;
+    cursor: pointer;
+    font-size: 16px;
+    display: inline-flex;
+    align-items: center;
+    margin-left: 10px;
+}
+
+.add-button i {
+    margin-right: 5px;
+}
+
+/* Estilos de la tabla */
+.employee-table {
+    width: 100%;
+    border-collapse: collapse;
+    background-color: var(--color-contenedor);
+    box-shadow: var(--sombra-default);
+    border-radius: 0 0 8px 8px;
+}
+
+.employee-table th {
+    background-color: var(--color-boton);
+    color: white;
+    text-align: left;
+    padding: 12px 15px;
+}
+
+.employee-table th:first-child {
+    border-top-left-radius: 4px;
+}
+
+.employee-table th:last-child {
+    border-top-right-radius: 4px;
+}
+
+.employee-table td {
+    padding: 12px 15px;
+    border-bottom: 1px solid var(--color-borde);
+}
+
+.employee-table tr:last-child td {
+    border-bottom: none;
+}
+
+.employee-table tr:hover {
+    background-color: #f9f9f9;
+}
+
+.details-button {
+    background-color: var(--color-boton);
+    color: white;
+    border: none;
+    border-radius: 4px;
+    padding: 8px 12px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.details-button:hover {
+    background-color: var(--color-boton-hover);
+}
+
+/* Paginación */
+.pagination {
+    display: flex;
+    justify-content: center;
+    margin-top: 20px;
+}
+
+.pagination-button {
+    background-color: var(--color-contenedor);
+    border: 1px solid var(--color-borde);
+    padding: 8px 12px;
+    margin: 0 5px;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: background-color 0.3s;
+}
+
+.pagination-button:hover {
+    background-color: var(--color-bg-principal);
+}
+
+.pagination-button.active {
+    background-color: var(--color-boton);
+    color: white;
+    border-color: var(--color-boton);
+}
