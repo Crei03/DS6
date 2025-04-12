@@ -1,0 +1,177 @@
+/* Contenedor principal del formulario */
+.employee-card {
+  max-width: 1000px;
+  margin: 2rem auto;
+  padding: 2rem;
+  background-color: var(--color-contenedor);
+  border-radius: 8px;
+  box-shadow: var(--sombra-default);
+}
+
+/* Estilo para select inválidos */
+.invalid-select {
+  border: 2px solid red !important;
+  background-color: rgba(255, 0, 0, 0.05) !important;
+}
+/* Asegurar que el desplegable no tenga fondo rojo */
+.invalid-select option {
+  background-color: white !important;
+}
+
+/* Estilo para input inválidos */
+.invalid-input {
+  border: 2px solid red !important;
+  background-color: rgba(255, 0, 0, 0.05) !important;
+}
+
+/* Título principal */
+.employee-card h1 {
+  color: var(--color-titulo);
+  margin-bottom: 1.5rem;
+  font-size: 28px;
+}
+
+/* Secciones del formulario */
+.form-section {
+  margin-bottom: 2rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 1px solid var(--color-borde);
+}
+
+.form-section:last-child {
+  border-bottom: none;
+}
+
+.form-section h2 {
+  color: var(--color-titulo);
+  font-size: 20px;
+  margin-bottom: 1rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--color-borde);
+}
+
+/* Filas del formulario */
+.form-row {
+  display: flex;
+  flex-wrap: wrap;
+  margin-bottom: 1rem;
+  gap: 1rem;
+}
+
+/* Grupos de formulario */
+.form-group {
+  flex: 1 1 200px;
+  margin-bottom: 1rem;
+}
+
+.form-group.full-width {
+  flex: 1 1 100%;
+}
+
+/* Etiquetas de formulario */
+.form-group label {
+  display: block;
+  margin-bottom: 0.5rem;
+  color: var(--color-texto-secundario);
+  font-weight: 500;
+}
+
+
+/* Campos de entrada */
+.form-group input,
+.form-group select {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid var(--color-borde);
+  border-radius: 4px;
+  font-size: 16px;
+  transition: border-color 0.3s;
+}
+
+.form-group input:focus,
+.form-group select:focus {
+  border-color: var(--color-boton);
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
+}
+
+.form-group input:disabled {
+  background-color: #f4f4f4;
+  cursor: not-allowed;
+}
+
+#pref_telfno {
+  width: 65px;
+}
+
+/* Ajusta los divs que contienen los prefijos para que no tomen tanto espacio */
+.form-row .form-group:has(#pref_telfno){
+  flex: 0 0 auto;
+  margin-right: 0;
+}
+
+/* Ajusta los divs que contienen celular y teléfono para que estén pegados a sus prefijos */
+.form-row .form-group:has(#celular){
+  flex: 1;
+  margin-left: 0;
+}
+
+/* Grupo de botones */
+.button-group {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+  margin-top: 2rem;
+}
+
+.button-group .btn {
+  padding: 12px 20px;
+  border: none;
+  border-radius: 4px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.button-group .btn {
+  background-color: var(--color-boton);
+  color: white;
+}
+
+.button-group .btn:hover {
+  background-color: var(--color-boton-hover);
+}
+
+.button-group .btn-secondary {
+  background-color: #95a5a6;
+}
+
+.button-group .btn-secondary:hover {
+  background-color: #7f8c8d;
+}
+
+/* Clases de utilidad */
+.text-center {
+  text-align: center;
+}
+
+/* Estilos responsivos */
+@media (max-width: 768px) {
+  .employee-card {
+    padding: 1.5rem;
+    margin: 1rem;
+  }
+
+  .form-group {
+    flex: 1 1 100%;
+  }
+
+  .button-group {
+    flex-direction: column;
+  }
+
+  .button-group .btn {
+    width: 100%;
+    margin-bottom: 0.5rem;
+  }
+}
