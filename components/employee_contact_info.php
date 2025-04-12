@@ -4,6 +4,9 @@
  * 
  * @param array $employeeData Datos del empleado
  */
+?>
+<link rel="stylesheet" href="assets/admin/employee_details.css">
+<?php
 class EmployeeContactInfo {
     private $employeeData;
     
@@ -24,20 +27,32 @@ class EmployeeContactInfo {
             
             <div class="form-row">
                 <div class="form-group">
+                    <label for="celular">Prefijo:</label>
+                    <input id="pref_telfno" name="pref_telfno" value="+507" readonly>
+                </div>
+                <div class="form-group">
                     <label for="celular">Celular:</label>
-                    <input type="tel" id="celular" name="celular" value="<?php echo $this->employeeData['celular']; ?>">
+                    <input id="celular" name="celular" value="<?php echo $this->employeeData['celular']; ?>" oninput="this.value = validarSoloNumeros(this.value)" required>
                 </div>
                 
+            </div>
+
+            <div class="form-row">
                 <div class="form-group">
-                    <label for="telefono">Teléfono:</label>
-                    <input type="tel" id="telefono" name="telefono" value="<?php echo $this->employeeData['telefono']; ?>">
+                    <label for="celular">Prefijo:</label>
+                    <input id="pref_telfno" name="pref_telfno" value="+507" readonly>
                 </div>
+                <div class="form-group">
+                    <label for="telefono">Telefono:</label>
+                    <input id="telefono" name="telefono" value="<?php echo $this->employeeData['telefono']; ?>" oninput="this.value = validarSoloNumeros(this.value)" required>
+                </div>
+                
             </div>
             
             <div class="form-row">
                 <div class="form-group full-width">
                     <label for="correo">Correo Electrónico:</label>
-                    <input type="email" id="correo" name="correo" value="<?php echo $this->employeeData['correo']; ?>">
+                    <input type="email" id="correo" name="correo" value="<?php echo $this->employeeData['correo']; ?>" required>
                 </div>
             </div>
         </div>

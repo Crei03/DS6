@@ -31,16 +31,16 @@ class EmployeeWorkInfo {
             
             <div class="form-row">
                 <div class="form-group">
-                    <label for="cargo">Cargo:</label>
-                    <select id="cargo" name="cargo">
-                        <?php echo $this->parent->generateSelectOptions($cargos, $this->employeeData['cargo']); ?>
-                    </select>
-                </div>
-                
-                <div class="form-group">
                     <label for="departamento">Departamento:</label>
                     <select id="departamento" name="departamento">
                         <?php echo $this->parent->generateSelectOptions($departamentos, $this->employeeData['departamento']); ?>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="cargo">Cargo:</label>
+                    <select id="cargo" name="cargo">
+                        <?php echo $this->parent->generateSelectOptions($cargos, $this->employeeData['cargo']); ?>
                     </select>
                 </div>
             </div>
@@ -48,7 +48,7 @@ class EmployeeWorkInfo {
             <div class="form-row">
                 <div class="form-group">
                     <label for="f_contra">Fecha de Contratación:</label>
-                    <input type="date" id="f_contra" name="f_contra" value="<?php echo $this->employeeData['f_contra']; ?>">
+                    <input type="date" id="f_contra" name="f_contra" value="<?php echo $this->employeeData['f_contra']; ?>" required>
                 </div>
                 
                 <div class="form-group">

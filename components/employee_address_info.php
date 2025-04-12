@@ -56,7 +56,7 @@ class EmployeeAddressInfo {
             <div class="form-row">
                 <div class="form-group">
                     <label for="calle">Calle:</label>
-                    <input type="text" id="calle" name="calle" value="<?php echo $this->employeeData['calle']; ?>">
+                    <input type="text" id="calle" name="calle" value="<?php echo $this->employeeData['calle']; ?>" required>
                 </div>
                 
                 <div class="form-group">

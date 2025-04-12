@@ -89,7 +89,7 @@ class EmployeeDetails {
      * Generar opciones para selects con el valor seleccionado
      */
     public function generateSelectOptions($options, $selected_value) {
-        $html = '';
+        $html = '<option value="">Seleccionar</option>';
         foreach($options as $value => $text) {
             $selected = ($value == $selected_value) ? 'selected' : '';
             $html .= "<option value='$value' $selected>$text</option>";
@@ -102,8 +102,8 @@ class EmployeeDetails {
      */
     public function getGenderOptions() {
         $options = [
-            '1' => 'Masculino',
-            '2' => 'Femenino'
+            '0' => 'Masculino',
+            '1' => 'Femenino'
         ];
         return $this->generateSelectOptions($options, $this->employeeData['genero']);
     }
@@ -113,10 +113,10 @@ class EmployeeDetails {
      */
     public function getCivilStatusOptions() {
         $options = [
-            '1' => 'Soltero/a',
-            '2' => 'Casado/a',
-            '3' => 'Divorciado/a',
-            '4' => 'Viudo/a'
+            '0' => 'Soltero/a',
+            '1' => 'Casado/a',
+            '2' => 'Divorciado/a',
+            '3' => 'Viudo/a'
         ];
         return $this->generateSelectOptions($options, $this->employeeData['estado_civil']);
     }
@@ -182,6 +182,7 @@ class EmployeeDetails {
             <link rel="stylesheet" href="../../assets/global/root.css">
             <link rel="stylesheet" href="../../assets/admin/employee_details.css">
             <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+
         </head>
         <body>
         <?php 
@@ -216,6 +217,156 @@ class EmployeeDetails {
             </div>
             
             <script>
+            // Funciones de validación para inputs
+            function validarSoloNumeros(valor) {
+                // Eliminar cualquier carácter que no sea un número
+                return valor.replace(/[^0-9]/g, '');
+            }
+
+            function validarSoloLetras(valor) {
+                // Eliminar cualquier carácter que no sea una letra o espacio
+                return valor.replace(/[^a-zA-ZáéíóúÁÉÍÓÚüÜñÑ\s]/g, '');
+            }
+            
+            // Validación para prevenir envío de formulario con opciones "Seleccionar" o campos obligatorios vacíos
+            document.addEventListener('DOMContentLoaded', function() {
+                const employeeForm = document.getElementById('employeeForm');
+                
+                // Aplicar estilos iniciales a los selects vacíos
+                const selectElements = employeeForm.querySelectorAll('select');
+                selectElements.forEach(function(select) {
+                    if (select.value === '') {
+                        select.classList.add('invalid-select');
+                    }
+                    
+                    select.addEventListener('change', function() {
+                        if (this.value !== '') {
+                            this.classList.remove('invalid-select');
+                        } else {
+                            this.classList.add('invalid-select');
+                        }
+                    });
+                });
+                
+                // Campos que deben ser excluidos de la validación obligatoria
+                const excludedFields = ['nombre2', 'apellido2', 'casa', 'comunidad'];
+                
+                // Obtener todos los inputs con atributo 'required'
+                let inputElements = Array.from(employeeForm.querySelectorAll('input[required]'));
+                
+                // Filtrar los campos excluidos
+                inputElements = inputElements.filter(input => {
+                    return !excludedFields.includes(input.id) && !excludedFields.includes(input.name);
+                });
+                
+                // Manejo especial para el apellido de casada
+                const usaAcSelect = document.getElementById('usa_ac');
+                const apellidoCasadaField = document.getElementById('apellidoc');
+                
+                // Función para actualizar la validación del apellido de casada
+                function updateApellidoCasadaValidation() {
+                    if (usaAcSelect && apellidoCasadaField) {
+                        if (usaAcSelect.value === '1') { // Si usa apellido de casada es "Sí"
+                            // Agregar al array de inputs a validar si no está
+                            const index = inputElements.indexOf(apellidoCasadaField);
+                            if (index === -1) {
+                                inputElements.push(apellidoCasadaField);
+                            }
+                            
+                            // Verificar estado actual y aplicar estilo si está vacío
+                            if (apellidoCasadaField.value.trim() === '') {
+                                apellidoCasadaField.classList.add('invalid-input');
+                            } else {
+                                apellidoCasadaField.classList.remove('invalid-input');
+                            }
+                        } else {
+                            // Si no usa apellido de casada, quitarlo del array de validación
+                            const index = inputElements.indexOf(apellidoCasadaField);
+                            if (index > -1) {
+                                inputElements.splice(index, 1);
+                            }
+                            // Y quitar cualquier estilo de error
+                            apellidoCasadaField.classList.remove('invalid-input');
+                        }
+                    }
+                }
+                
+                // Configurar evento para el cambio en usa_ac
+                if (usaAcSelect) {
+                    usaAcSelect.addEventListener('change', updateApellidoCasadaValidation);
+                    // Ejecutar una vez al inicio para establecer el estado inicial
+                    updateApellidoCasadaValidation();
+                }
+                
+                // Aplicar estilos iniciales a todos los inputs requeridos vacíos
+                inputElements.forEach(function(input) {
+                    // Verificar estado inicial
+                    if (input.value.trim() === '') {
+                        input.classList.add('invalid-input');
+                    }
+                    
+                    // Escuchar cambios en tiempo real
+                    input.addEventListener('input', function() {
+                        if (this.value.trim() !== '') {
+                            this.classList.remove('invalid-input');
+                        } else {
+                            this.classList.add('invalid-input');
+                        }
+                    });
+                });
+                
+                // Validación al enviar el formulario
+                employeeForm.addEventListener('submit', function(event) {
+                    let formValid = true;
+                    let firstInvalidField = null;
+                    
+                    // Validar selects
+                    selectElements.forEach(function(select) {
+                        if (select.value === '') {
+                            formValid = false;
+                            select.classList.add('invalid-select');
+                            
+                            if (!firstInvalidField) {
+                                firstInvalidField = select;
+                            }
+                        } else {
+                            select.classList.remove('invalid-select');
+                        }
+                    });
+                    
+                    // Validar inputs requeridos
+                    inputElements.forEach(function(input) {
+                        // Excepción para apellido de casada cuando no se usa
+                        if (input.id === 'apellidoc' && usaAcSelect && usaAcSelect.value === '0') {
+                            return;
+                        }
+                        
+                        if (input.value.trim() === '') {
+                            formValid = false;
+                            input.classList.add('invalid-input');
+                            
+                            if (!firstInvalidField) {
+                                firstInvalidField = input;
+                            }
+                        } else {
+                            input.classList.remove('invalid-input');
+                        }
+                    });
+                    
+                    // Si hay campos inválidos, prevenir envío y mostrar mensaje
+                    if (!formValid) {
+                        event.preventDefault();
+                        alert('No se permite enviar el formulario con campos obligatorios vacíos. Por favor, complete todos los campos requeridos.');
+                        
+                        // Hacer scroll al primer campo inválido
+                        if (firstInvalidField) {
+                            firstInvalidField.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                            firstInvalidField.focus();
+                        }
+                    }
+                });
+            });
+            
             // Script para cargar los distritos y corregimientos de forma dinámica
             document.addEventListener('DOMContentLoaded', function() {
                 const provinciaSelect = document.getElementById('provincia');
@@ -307,7 +458,7 @@ class FakeStmt {
                 'prefijo'      => 'Mr.',
                 'tomo'         => '001',
                 'asiento'      => '010',
-                'nombre1'      => 'Juan',
+                'nombre1'      => '',
                 'nombre2'      => 'Carlos',
                 'apellido1'    => 'Perez',
                 'apellido2'    => 'Lopez',
@@ -315,7 +466,7 @@ class FakeStmt {
                 'usa_ac'       => '1',
                 'genero'       => '1',
                 'estado_civil' => '2',
-                'tipo_sangre'  => '',
+                'tipo_sangre'  => 'Desconocido',
                 'f_nacimiento' => '1985-05-15',
                 'nacionalidad' => '1',
                 'celular'      => '04141234567',
