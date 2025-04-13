@@ -8,6 +8,13 @@
 // Incluir la configuración y validación
 require_once '../../config/config.php';
 require_once '../../config/validation.php';
+require_once '../../class/session.php';
+
+// Verificar sesión del usuario
+$sesion = new Session();
+if (!$sesion->esEmpleado()) {
+    $sesion->redirigir('../../modules/auth/login.php');
+}
 
 // Incluir los componentes necesarios
 require_once '../../components/profile_actions.php';
@@ -30,13 +37,12 @@ class MyProfile {
      * Constructor de la clase
      */
     public function __construct() {
-        global $conn;
+        global $conn, $sesion;
         
         $this->db = $conn;
         
-        // En un entorno real, obtendríamos el ID del empleado de la sesión
-        // Por ahora usamos un ID fijo para pruebas
-        $this->empleadoId = isset($_SESSION['empleado_id']) ? $_SESSION['empleado_id'] : 1;
+        // Obtener el ID del empleado de la sesión
+        $this->empleadoId = $sesion->getCedula();
         
         // Cargar los datos del empleado
         $this->loadEmployeeData();
@@ -210,7 +216,6 @@ class MyProfile {
             ['value' => 'C', 'text' => 'Casado/a'],
             ['value' => 'D', 'text' => 'Divorciado/a'],
             ['value' => 'V', 'text' => 'Viudo/a'],
-            ['value' => 'U', 'text' => 'Unión libre']
         ];
         
         $html = '<option value="">Seleccione una opción</option>';

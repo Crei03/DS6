@@ -1,22 +1,13 @@
 <?php
 // Incluir archivos de configuración
 require_once '../../config/config.php';
+require_once '../../class/session.php';
 
-// // Verificar si el usuario está autenticado
-// if (!isset($_SESSION)) {
-//     session_start();
-// }
-
-// // Si el usuario no está autenticado, redirigir al login
-// if (!isset($_SESSION['usuario_id'])) {
-//     redirigir('auth/login.php');
-// }
-
-// // Verificar si el usuario es administrador
-// if (!isset($_SESSION['rol']) || $_SESSION['rol'] !== 'admin') {
-//     // Si no es administrador, redirigir al dashboard
-//     redirigir('modules/dashboard.php');
-// }
+// Verificar sesión del usuario
+$sesion = new Session();
+if (!$sesion->esAdmin()) {
+    $sesion->redirigir('../../modules/auth/login.php');
+}
 
 // Incluir el componente del sidebar
 require_once '../../components/sidebar_menu.php';
@@ -68,6 +59,14 @@ $empleados = [
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 </head>
 <body>
+    <!-- Botón para mostrar/ocultar el sidebar en pantallas pequeñas -->
+    <button class="sidebar-toggle" id="sidebar-toggle">
+        <span class="material-icons">menu</span>
+    </button>
+
+    <!-- Capa semi-transparente para dispositivos móviles -->
+    <div class="sidebar-blur" id="sidebar-blur"></div>
+    
     <?php 
     // Renderizar el sidebar indicando la página activa
     renderSidebar('empleados'); 
@@ -80,12 +79,8 @@ $empleados = [
             
             <div class="search-container">
                 <input type="text" class="search-input" placeholder="Buscar empleado...">
-                <button class="search-button">
-                    <span class="material-icons">search</span>
-                </button>
-                <button class="add-button">
-                    <span class="material-icons">add</span> Agregar
-                </button>
+                <button class="search-button"><span class="material-icons">search</span></button>
+                <a href="employee_add.php" class="add-button"><span class="material-icons">add</span> Agregar</a>
             </div>
         </div>
         
@@ -102,12 +97,14 @@ $empleados = [
             <tbody>
                 <?php foreach ($empleados as $empleado): ?>
                 <tr>
-                    <td><?php echo htmlspecialchars($empleado['nombre']); ?></td>
-                    <td><?php echo htmlspecialchars($empleado['apellido']); ?></td>
-                    <td><?php echo htmlspecialchars($empleado['telefono']); ?></td>
-                    <td><?php echo htmlspecialchars($empleado['pais']); ?></td>
+                    <td><?php echo $empleado['nombre']; ?></td>
+                    <td><?php echo $empleado['apellido']; ?></td>
+                    <td><?php echo $empleado['telefono']; ?></td>
+                    <td><?php echo $empleado['pais']; ?></td>
                     <td>
-                        <button class="details-button">Más detalles</button>
+                        <a href="employee_details.php?id=1" class="details-button">
+                            <span class="material-icons">visibility</span> Ver
+                        </a>
                     </td>
                 </tr>
                 <?php endforeach; ?>
@@ -124,5 +121,39 @@ $empleados = [
             <button class="pagination-button"><span class="material-icons">last_page</span></button>
         </div>
     </div>
+
+    <script>
+        // Funcionalidad del sidebar responsive
+        document.addEventListener('DOMContentLoaded', function() {
+            const sidebarToggle = document.getElementById('sidebar-toggle');
+            const sidebar = document.querySelector('.sidebar');
+            const sidebarBlur = document.getElementById('sidebar-blur');
+            
+            // Función para mostrar/ocultar el sidebar
+            sidebarToggle.addEventListener('click', function() {
+                sidebar.classList.toggle('active');
+                sidebarBlur.classList.toggle('active');
+            });
+            
+            // Cerrar el sidebar al hacer clic en el área semi-transparente
+            sidebarBlur.addEventListener('click', function() {
+                sidebar.classList.remove('active');
+                sidebarBlur.classList.remove('active');
+            });
+            
+            // Ajustar la visualización en cambios de tamaño de ventana
+            window.addEventListener('resize', function() {
+                if (window.innerWidth > 480) {
+                    sidebarBlur.classList.remove('active');
+                    // En pantallas mayores a 480px, el sidebar siempre es visible
+                    if (window.innerWidth <= 768) {
+                        sidebar.classList.remove('active');
+                    } else {
+                        sidebar.classList.add('active');
+                    }
+                }
+            });
+        });
+    </script>
 </body>
 </html>
