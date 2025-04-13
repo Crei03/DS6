@@ -1,0 +1,223 @@
+/* Estilo para la página de perfil del empleado */
+body {
+    margin: 0;
+    padding: 0;
+    display: flex;
+    background-color: var(--color-bg-principal);
+}
+
+.profile-container {
+    display: flex;
+    gap: 20px;
+    padding: 20px;
+    margin-left: 250px; /* Ajuste para el espacio del sidebar */
+    width: calc(100% - 250px); /* Ajuste del ancho para considerar el sidebar */
+    min-height: 100vh;
+    background-color: var(--color-bg-principal);
+    overflow-x: hidden;
+}
+
+.profile-sidebar-container {
+    width: 25%;
+    min-width: 250px;
+}
+
+.profile-content {
+    flex-grow: 1;
+    background-color: var(--color-contenedor);
+    border-radius: 8px;
+    padding: 20px;
+    overflow-y: auto;
+    box-shadow: var(--sombra-default);
+}
+
+.info-container {
+    display: none;
+}
+
+.info-container.active {
+    display: block;
+}
+
+.form-section {
+    margin-bottom: 30px;
+}
+
+.form-section h2 {
+    color: var(--color-titulo);
+    margin-bottom: 20px;
+    font-size: 1.5rem;
+    font-weight: 500;
+    border-bottom: 1px solid var(--color-borde);
+    padding-bottom: 10px;
+}
+
+.form-row {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 15px;
+    flex-wrap: wrap;
+}
+
+.form-group {
+    flex: 1;
+    min-width: 200px;
+}
+
+.form-group.full-width {
+    flex-basis: 100%;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: 500;
+    color: var(--color-texto-secundario);
+}
+
+.form-group input,
+.form-group select {
+    width: 100%;
+    padding: 10px;
+    border-radius: 4px;
+    border: 1px solid var(--color-borde);
+    background-color: var(--color-contenedor);
+    color: var(--color-texto-secundario);
+    font-size: 1rem;
+}
+
+.form-group input[disabled],
+.form-group select[disabled] {
+    background-color: var(--color-bg-principal);
+    cursor: not-allowed;
+    opacity: 0.7;
+}
+
+.form-group input:focus,
+.form-group select:focus {
+    outline: none;
+    border-color: var(--color-boton);
+}
+
+.buttons-container {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+.action-button {
+    padding: 10px 20px;
+    border-radius: 4px;
+    border: none;
+    cursor: pointer;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.button-save {
+    background-color: var(--color-boton);
+    color: var(--color-contenedor);
+}
+
+.button-save:hover {
+    background-color: var(--color-boton-hover);
+}
+
+.button-cancel {
+    background-color: var(--color-texto-secundario);
+    color: var(--color-contenedor);
+}
+
+.button-cancel:hover {
+    background-color: #444;
+}
+
+/* Estilos específicos para datos no editables */
+.read-only-section input,
+.read-only-section select {
+    background-color: var(--color-bg-principal);
+    cursor: not-allowed;
+    opacity: 0.7;
+}
+
+/* Campos específicos no editables en información personal */
+#genero[disabled],
+#f_nacimiento[disabled],
+#nacionalidad[disabled] {
+    background-color: var(--color-bg-principal);
+    cursor: not-allowed;
+    opacity: 0.7;
+}
+
+/* Ajustes responsivos */
+@media (max-width: 1200px) {
+    .profile-sidebar-container {
+        width: 30%;
+        min-width: 200px;
+    }
+}
+
+@media (max-width: 992px) {
+    .profile-container {
+        flex-direction: column;
+        margin-left: 250px;
+        width: calc(100% - 270px);
+        padding: 15px;
+    }
+    
+    .profile-sidebar-container {
+        width: 100%;
+        min-width: auto;
+        margin-bottom: 20px;
+    }
+    
+    .form-group {
+        min-width: 160px;
+    }
+}
+
+@media (max-width: 768px) {
+    .profile-container {
+        margin-left: 60px; /* Ajuste para el sidebar colapsado */
+        width: calc(100% - 80px);
+    }
+    
+    .form-row {
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .form-group {
+        width: 100%;
+    }
+    
+    .buttons-container {
+        flex-direction: column;
+    }
+    
+    .action-button {
+        width: 100%;
+        margin-bottom: 5px;
+    }
+}
+
+@media (max-width: 480px) {
+    .profile-container {
+        padding: 10px;
+    }
+    
+    .profile-content {
+        padding: 15px;
+    }
+    
+    .form-section h2 {
+        font-size: 1.2rem;
+    }
+    
+    .form-group input,
+    .form-group select {
+        padding: 8px;
+        font-size: 14px;
+    }
+}

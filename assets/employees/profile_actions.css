@@ -1,0 +1,146 @@
+/* Estilo para el componente de acciones de perfil */
+.profile-sidebar {
+    background-color: var(--color-contenedor);
+    border-radius: 8px;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    color: var(--color-texto-secundario);
+    box-shadow: var(--sombra-default);
+}
+
+.profile-image-container {
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+    overflow: hidden;
+    border: 2px solid var(--color-boton);
+    margin-bottom: 15px;
+    background-color: var(--color-bg-principal);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.profile-image-container img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.profile-initials {
+    font-size: 50px;
+    color: var(--color-titulo);
+    font-weight: bold;
+}
+
+.profile-username {
+    font-size: 1.2rem;
+    margin: 10px 0 20px;
+    font-weight: 500;
+    color: var(--color-titulo);
+    text-align: center;
+}
+
+.profile-actions {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.profile-action-btn {
+    background-color: var(--color-bg-principal);
+    color: var(--color-boton);
+    border: 1px solid var(--color-borde);
+    border-radius: 4px;
+    padding: 12px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    width: 100%;
+    font-weight: 500;
+}
+
+.profile-action-btn:hover {
+    background-color: var(--color-boton);
+    color: var(--color-contenedor);
+}
+
+.profile-action-btn.active {
+    background-color: var(--color-boton);
+    color: var(--color-contenedor);
+}
+
+/* Estilos responsivos */
+@media (max-width: 1200px) {
+    .profile-image-container {
+        width: 120px;
+        height: 120px;
+    }
+    
+    .profile-initials {
+        font-size: 40px;
+    }
+}
+
+@media (max-width: 992px) {
+    .profile-sidebar {
+        padding: 15px;
+    }
+    
+    .profile-actions {
+        display: flex;
+        flex-direction: row;
+        flex-wrap: wrap;
+        justify-content: space-between;
+        gap: 10px;
+    }
+    
+    .profile-action-btn {
+        width: calc(50% - 5px);
+        padding: 10px;
+    }
+}
+
+@media (max-width: 768px) {
+    .profile-image-container {
+        width: 100px;
+        height: 100px;
+    }
+    
+    .profile-username {
+        font-size: 1rem;
+        margin: 8px 0 15px;
+    }
+    
+    .profile-actions {
+        flex-direction: row;
+    }
+    
+    .profile-action-btn {
+        padding: 8px;
+        font-size: 0.9rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .profile-image-container {
+        width: 80px;
+        height: 80px;
+    }
+    
+    .profile-initials {
+        font-size: 30px;
+    }
+    
+    .profile-actions {
+        flex-direction: column;
+    }
+    
+    .profile-action-btn {
+        width: 100%;
+        margin-bottom: 5px;
+    }
+}
