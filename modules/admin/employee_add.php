@@ -2,13 +2,64 @@
 // Incluir archivos de configuración y validación
 require_once '../../config/config.php';
 require_once '../../config/validation.php';
+require_once '../../config/BdHandler.php';
 require_once '../../class/session.php';
+require_once '../../class/employee.php';
 
 // Verificar sesión del usuario
 $sesion = new Session();
 if (!$sesion->esAdmin()) {
     $sesion->redirigir('../../modules/auth/login.php');
 }
+
+// --- INICIO: Manejo de solicitudes AJAX ---
+if (isset($_GET['ajax'])) {
+    header('Content-Type: application/json');
+    $response = ['status' => 'error', 'message' => 'Acción no válida'];
+    $dbHandler = new DBHandler();
+    $action = $_GET['ajax'];
+    $id = null;
+    $result = null;
+
+    switch ($action) {
+        case 'get_distritos':
+            if (isset($_GET['provincia_id'])) {
+                $id = $_GET['provincia_id'];
+                $result = $dbHandler->getDistritosByProvincia($id);
+            } else {
+                $response['message'] = 'Falta provincia_id';
+            }
+            break;
+        case 'get_corregimientos':
+            if (isset($_GET['distrito_id'])) {
+                $id = $_GET['distrito_id'];
+                $result = $dbHandler->getCorregimientosByDistrito($id);
+            } else {
+                $response['message'] = 'Falta distrito_id';
+            }
+            break;
+        case 'get_cargos':
+            if (isset($_GET['departamento_id'])) {
+                $id = $_GET['departamento_id'];
+                $result = $dbHandler->getCargosByDepartamento($id);
+            } else {
+                $response['message'] = 'Falta departamento_id';
+            }
+            break;
+    }
+
+    if ($result !== null) {
+        if ($result['status'] === 'ok') {
+            $response = ['status' => 'ok', 'data' => $result['data']];
+        } else {
+            $response['message'] = $result['message'];
+        }
+    }
+
+    echo json_encode($response);
+    exit;
+}
+// --- FIN: Manejo de solicitudes AJAX ---
 
 require_once '../../components/sidebar_menu.php';
 
@@ -22,14 +73,15 @@ require_once '../../components/employee_work_info.php';
  * Clase para gestionar la adición de nuevos empleados
  */
 class EmployeeAdd {
-    private $conn;
+    private $employee;
     private $employeeData;
     
     /**
      * Constructor de la clase
      */
-    public function __construct($connection) {
-        $this->conn = $connection;
+    public function __construct() {
+        // Inicializar una instancia de Employee sin cédula para obtener opciones
+        $this->employee = new Employee();
         
         // Inicializar un array vacío para los datos del empleado
         $this->initializeEmptyData();
@@ -49,7 +101,7 @@ class EmployeeAdd {
             'apellido1' => '',
             'apellido2' => '',
             'apellidoc' => '',
-            'usa_ac' => '0',
+            'usa_ac' => '',
             'genero' => '',
             'estado_civil' => '',
             'tipo_sangre' => '',
@@ -72,20 +124,24 @@ class EmployeeAdd {
     }
     
     /**
-     * Obtener las opciones para los campos de selección
+     * Obtener las opciones para los campos de selección desde la clase Employee
+     * Simplificado: Se eliminan los casos para distrito, corregimiento y cargo,
+     * ya que se cargan dinámicamente con JavaScript/AJAX.
      */
-    public function getOptions($table, $code_field, $name_field) {
-        $options = [];
-        $query = "SELECT $code_field, $name_field FROM $table ORDER BY $name_field";
-        $result = $this->conn->query($query);
-        
-        if ($result && $result->num_rows > 0) {
-            while($row = $result->fetch_assoc()) {
-                $options[$row[$code_field]] = $row[$name_field];
-            }
+    public function getOptions($tabla, $valor_campo, $texto_campo) {
+        switch ($tabla) {
+            case 'provincia':
+                return $this->getProvincias();
+                
+            case 'nacionalidad':
+                return $this->getNacionalidades();
+                
+            case 'departamento':
+                return $this->getDepartamentos();
+                
+            default:
+                return $this->employee->getOptions($tabla, $valor_campo, $texto_campo);
         }
-        
-        return $options;
     }
     
     /**
@@ -93,7 +149,9 @@ class EmployeeAdd {
      */
     public function generateSelectOptions($options, $selected_value = '') {
         $html = '<option value="">Seleccionar</option>';
-        foreach($options as $value => $text) {
+        foreach($options as $option) {
+            $value = $option['value'];
+            $text = $option['text'];
             $selected = ($value == $selected_value) ? 'selected' : '';
             $html .= "<option value='$value' $selected>$text</option>";
         }
@@ -101,13 +159,31 @@ class EmployeeAdd {
     }
     
     /**
+     * Obtiene las provincias usando la clase Employee
+     */
+    public function getProvincias() {
+        return $this->employee->getProvincias();
+    }
+    
+    /**
+     * Obtiene las nacionalidades usando la clase Employee
+     */
+    public function getNacionalidades() {
+        return $this->employee->getNacionalidades();
+    }
+    
+    /**
+     * Obtiene los departamentos usando la clase Employee
+     */
+    public function getDepartamentos() {
+        return $this->employee->getDepartamentos();
+    }
+    
+    /**
      * Generar opciones para género
      */
     public function getGenderOptions() {
-        $options = [
-            '0' => 'Masculino',
-            '1' => 'Femenino'
-        ];
+        $options = $this->employee->getGenderOptions();
         return $this->generateSelectOptions($options, $this->employeeData['genero']);
     }
     
@@ -115,12 +191,7 @@ class EmployeeAdd {
      * Generar opciones para estado civil
      */
     public function getCivilStatusOptions() {
-        $options = [
-            '0' => 'Soltero/a',
-            '1' => 'Casado/a',
-            '2' => 'Divorciado/a',
-            '3' => 'Viudo/a'
-        ];
+        $options = $this->employee->getCivilStatusOptions();
         return $this->generateSelectOptions($options, $this->employeeData['estado_civil']);
     }
     
@@ -128,17 +199,7 @@ class EmployeeAdd {
      * Generar opciones para tipo de sangre
      */
     public function getBloodTypeOptions() {
-        $options = [
-            'Desconocido' => 'Desconocido',
-            'O+' => 'O+',
-            'O-' => 'O-',
-            'A+' => 'A+',
-            'A-' => 'A-',
-            'B+' => 'B+',
-            'B-' => 'B-',
-            'AB+' => 'AB+',
-            'AB-' => 'AB-'
-        ];
+        $options = $this->employee->getBloodTypeOptions();
         return $this->generateSelectOptions($options, $this->employeeData['tipo_sangre']);
     }
     
@@ -146,10 +207,7 @@ class EmployeeAdd {
      * Generar opciones para usa apellido de casada
      */
     public function getUsaAcOptions() {
-        $options = [
-            '0' => 'No',
-            '1' => 'Sí'
-        ];
+        $options = $this->employee->getUsaAcOptions();
         return $this->generateSelectOptions($options, $this->employeeData['usa_ac']);
     }
     
@@ -157,10 +215,7 @@ class EmployeeAdd {
      * Generar opciones para estado de empleado
      */
     public function getStatusOptions() {
-        $options = [
-            '0' => 'Inactivo',
-            '1' => 'Activo'
-        ];
+        $options = $this->employee->getStatusOptions();
         return $this->generateSelectOptions($options, $this->employeeData['estado']);
     }
     
@@ -379,47 +434,108 @@ class EmployeeAdd {
                 const provinciaSelect = document.getElementById('provincia');
                 const distritoSelect = document.getElementById('distrito');
                 const corregimientoSelect = document.getElementById('corregimiento');
+                const departamentoSelect = document.getElementById('departamento');
+                const cargoSelect = document.getElementById('cargo');
                 
-                // Función para cargar distritos según la provincia seleccionada
+                // Function para realizar peticiones AJAX
+                function fetchData(url, handleData) {
+                    fetch(url)
+                        .then(response => {
+                            if (!response.ok) {
+                                throw new Error(`Error HTTP: ${response.status}`);
+                            }
+                            return response.json();
+                        })
+                        .then(data => handleData(data))
+                        .catch(error => {
+                            console.error('Error en fetch:', error);
+                        });
+                }
+                
+                // Función para poblar un select con opciones
+                function populateSelect(selectElement, data, defaultOptionText, valueField, textField) {
+                    selectElement.innerHTML = `<option value="">${defaultOptionText}</option>`;
+                    if (data && data.length > 0) {
+                        data.forEach(item => {
+                            const option = document.createElement('option');
+                            option.value = item[valueField];
+                            option.textContent = item[textField];
+                            selectElement.appendChild(option);
+                        });
+                    } else {
+                        selectElement.innerHTML = `<option value="">No hay opciones disponibles</option>`;
+                    }
+                }
+                
+                // Función para limpiar y deshabilitar selects dependientes
+                function resetDependentSelects(selects) {
+                    selects.forEach(select => {
+                        select.innerHTML = `<option value="">Seleccione primero el nivel anterior</option>`;
+                        select.disabled = true;
+                    });
+                }
+                
+                // Event listener para Provincia -> Distrito
                 provinciaSelect.addEventListener('change', function() {
                     const provinciaId = this.value;
+                    resetDependentSelects([distritoSelect, corregimientoSelect]);
                     
-                    // Limpiar las opciones actuales
-                    distritoSelect.innerHTML = '<option value="">Seleccione un distrito</option>';
-                    corregimientoSelect.innerHTML = '<option value="">Seleccione un corregimiento</option>';
-                    
-                    // Realizar petición AJAX para obtener distritos
-                    fetch(`get_distritos.php?provincia=${provinciaId}`)
-                        .then(response => response.json())
-                        .then(data => {
-                            data.forEach(distrito => {
-                                const option = document.createElement('option');
-                                option.value = distrito.codigo_distrito;
-                                option.textContent = distrito.nombre_distrito;
-                                distritoSelect.appendChild(option);
-                            });
+                    if (provinciaId) {
+                        distritoSelect.innerHTML = '<option value="">Cargando...</option>';
+                        fetchData(`employee_add.php?ajax=get_distritos&provincia_id=${provinciaId}`, function(response) {
+                            if (response.status === 'ok') {
+                                populateSelect(distritoSelect, response.data, 'Seleccione un distrito', 'codigo_distrito', 'nombre_distrito');
+                                distritoSelect.disabled = false;
+                            } else {
+                                distritoSelect.innerHTML = '<option value="">Error al cargar distritos</option>';
+                                distritoSelect.disabled = true;
+                            }
+                            corregimientoSelect.innerHTML = '<option value="">Seleccione un distrito primero</option>';
+                            corregimientoSelect.disabled = true;
                         });
+                    }
                 });
                 
-                // Función para cargar corregimientos según el distrito seleccionado
+                // Event listener para Distrito -> Corregimiento
                 distritoSelect.addEventListener('change', function() {
                     const distritoId = this.value;
+                    resetDependentSelects([corregimientoSelect]);
                     
-                    // Limpiar las opciones actuales
-                    corregimientoSelect.innerHTML = '<option value="">Seleccione un corregimiento</option>';
-                    
-                    // Realizar petición AJAX para obtener corregimientos
-                    fetch(`get_corregimientos.php?distrito=${distritoId}`)
-                        .then(response => response.json())
-                        .then(data => {
-                            data.forEach(corregimiento => {
-                                const option = document.createElement('option');
-                                option.value = corregimiento.codigo_corregimiento;
-                                option.textContent = corregimiento.nombre_corregimiento;
-                                corregimientoSelect.appendChild(option);
-                            });
+                    if (distritoId) {
+                        corregimientoSelect.innerHTML = '<option value="">Cargando...</option>';
+                        fetchData(`employee_add.php?ajax=get_corregimientos&distrito_id=${distritoId}`, function(response) {
+                            if (response.status === 'ok') {
+                                populateSelect(corregimientoSelect, response.data, 'Seleccione un corregimiento', 'codigo_corregimiento', 'nombre_corregimiento');
+                                corregimientoSelect.disabled = false;
+                            } else {
+                                corregimientoSelect.innerHTML = '<option value="">Error al cargar corregimientos</option>';
+                                corregimientoSelect.disabled = true;
+                            }
                         });
+                    }
                 });
+                
+                // Event listener para Departamento -> Cargo
+                departamentoSelect.addEventListener('change', function() {
+                    const departamentoId = this.value;
+                    resetDependentSelects([cargoSelect]);
+                    
+                    if (departamentoId) {
+                        cargoSelect.innerHTML = '<option value="">Cargando...</option>';
+                        fetchData(`employee_add.php?ajax=get_cargos&departamento_id=${departamentoId}`, function(data) {
+                            if (data.status === 'ok') {
+                                populateSelect(cargoSelect, data.data, 'Seleccione un cargo', 'codigo', 'nombre');
+                                cargoSelect.disabled = false;
+                            } else {
+                                cargoSelect.innerHTML = '<option value="">Error al cargar cargos</option>';
+                                cargoSelect.disabled = true;
+                            }
+                        });
+                    }
+                });
+                
+                // Inicializar selects dependientes como deshabilitados
+                resetDependentSelects([distritoSelect, corregimientoSelect, cargoSelect]);
                 
                 // Funcionalidad del sidebar responsive
                 const sidebarToggle = document.getElementById('sidebar-toggle');
@@ -442,7 +558,6 @@ class EmployeeAdd {
                 window.addEventListener('resize', function() {
                     if (window.innerWidth > 480) {
                         sidebarBlur.classList.remove('active');
-                        // En pantallas mayores a 480px, el sidebar siempre es visible
                         if (window.innerWidth <= 768) {
                             sidebar.classList.remove('active');
                         } else {
@@ -458,10 +573,7 @@ class EmployeeAdd {
     }
 }
 
-// Iniciar la conexión a la base de datos
-$conexion = conectarBD();
-
 // Crear instancia de EmployeeAdd y renderizar el formulario
-$employeeAdd = new EmployeeAdd($conexion);
+$employeeAdd = new EmployeeAdd();
 $employeeAdd->renderForm();
 ?>

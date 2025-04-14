@@ -1,10 +1,47 @@
 <?php
 // Incluir archivos de configuración
 require_once '../../config/config.php';
-require_once '../../config/validation.php';
 require_once '../../config/BdHandler.php';
+require_once '../../config/validation.php';
 require_once '../../class/session.php';
 require_once '../../class/employee.php';
+
+// --- INICIO: Manejo de solicitudes AJAX ---
+if (isset($_GET['ajax'])) {
+    header('Content-Type: application/json');
+    $response = ['status' => 'error', 'message' => 'Acción no válida'];
+    $dbHandler = new DBHandler();
+
+    if ($_GET['ajax'] === 'get_distritos' && isset($_GET['provincia_id'])) {
+        $provincia_id = $_GET['provincia_id'];
+        $result = $dbHandler->getDistritosByProvincia($provincia_id);
+        if ($result['status'] === 'ok') {
+            $response = ['status' => 'ok', 'data' => $result['data']];
+        } else {
+            $response['message'] = $result['message'];
+        }
+    } elseif ($_GET['ajax'] === 'get_corregimientos' && isset($_GET['distrito_id'])) {
+        $distrito_id = $_GET['distrito_id'];
+        $result = $dbHandler->getCorregimientosByDistrito($distrito_id);
+        if ($result['status'] === 'ok') {
+            $response = ['status' => 'ok', 'data' => $result['data']];
+        } else {
+            $response['message'] = $result['message'];
+        }
+    } elseif ($_GET['ajax'] === 'get_cargos' && isset($_GET['departamento_id'])) {
+        $departamento_id = $_GET['departamento_id'];
+        $result = $dbHandler->getCargosByDepartamento($departamento_id);
+        if ($result['status'] === 'ok') {
+            $response = ['status' => 'ok', 'data' => $result['data']];
+        } else {
+            $response['message'] = $result['message'];
+        }
+    }
+
+    echo json_encode($response);
+    exit;
+}
+// --- FIN: Manejo de solicitudes AJAX ---
 
 // Verificar sesión del usuario
 $sesion = new Session();
@@ -37,45 +74,9 @@ class EmployeeDetails {
             $this->employeeId = $_GET['id'];
             // Crear una instancia de la clase Employee
             $this->employee = new Employee($this->employeeId);
-            
-            // Manejar solicitudes de cargar distritos/corregimientos
-            $this->handleLocationRequests();
         } else {
             echo "ID de empleado no proporcionado.";
             exit;
-        }
-    }
-    
-    /**
-     * Maneja las solicitudes de carga de distritos y corregimientos
-     */
-    private function handleLocationRequests() {
-        if (isset($_GET['load_distritos'])) {
-            $provincia_id = $_GET['load_distritos'];
-            $distritos = $this->employee->getDistritos($provincia_id);
-            
-            // Guardar distritos en la sesión para mostrarlos cuando se recargue la página
-            $_SESSION['distritos'] = $distritos;
-            $_SESSION['provincia_seleccionada'] = $provincia_id;
-        }
-        
-        if (isset($_GET['load_corregimientos'])) {
-            $distrito_id = $_GET['load_corregimientos'];
-            $corregimientos = $this->employee->getCorregimientos($distrito_id);
-            
-            // Guardar corregimientos en la sesión para mostrarlos cuando se recargue la página
-            $_SESSION['corregimientos'] = $corregimientos;
-            $_SESSION['distrito_seleccionado'] = $distrito_id;
-        }
-        
-        // Manejar solicitud para cargar cargos según el departamento seleccionado
-        if (isset($_GET['load_cargos'])) {
-            $departamento_id = $_GET['load_cargos'];
-            $cargos = $this->employee->getCargos($departamento_id);
-            
-            // Guardar cargos en la sesión para mostrarlos cuando se recargue la página
-            $_SESSION['cargos'] = $cargos;
-            $_SESSION['departamento_seleccionado'] = $departamento_id;
         }
     }
     
@@ -84,21 +85,7 @@ class EmployeeDetails {
      */
     public function getDistritosForSelectedProvincia() {
         $provincia_id = $this->employee->get('provincia');
-        
-        // Si hay una provincia en la sesión, usarla
-        if (isset($_SESSION['provincia_seleccionada'])) {
-            $provincia_id = $_SESSION['provincia_seleccionada'];
-        }
-        
-        // Si hay distritos en la sesión, mostrarlos
-        if (isset($_SESSION['distritos'])) {
-            $distritos = $_SESSION['distritos'];
-        } else {
-            // Si no, obtener distritos para la provincia actual
-            $distritos = $this->employee->getDistritos($provincia_id);
-        }
-        
-        return $distritos;
+        return $this->employee->getDistritos($provincia_id);
     }
     
     /**
@@ -106,38 +93,22 @@ class EmployeeDetails {
      */
     public function getCorregimientosForSelectedDistrito() {
         $distrito_id = $this->employee->get('distrito');
-        
-        // Si hay un distrito en la sesión, usarlo
-        if (isset($_SESSION['distrito_seleccionado'])) {
-            $distrito_id = $_SESSION['distrito_seleccionado'];
-        }
-        
-        // Si hay corregimientos en la sesión, mostrarlos
-        if (isset($_SESSION['corregimientos'])) {
-            $corregimientos = $_SESSION['corregimientos'];
-        } else {
-            // Si no, obtener corregimientos para el distrito actual
-            $corregimientos = $this->employee->getCorregimientos($distrito_id);
-        }
-        
-        return $corregimientos;
+        return $this->employee->getCorregimientos($distrito_id);
     }
     
     /**
      * Obtener las opciones para los campos de selección
      */
     public function getOptions($tabla, $valor_campo, $texto_campo) {
-        // Utilizar la clase Employee para obtener opciones
-        // según el tipo de tabla solicitada
         switch ($tabla) {
             case 'provincia':
                 return $this->employee->getProvincias();
                 
             case 'distrito':
-                return $this->employee->getDistritos();
+                return $this->getDistritosForSelectedProvincia();
                 
             case 'corregimiento':
-                return $this->employee->getCorregimientos();
+                return $this->getCorregimientosForSelectedDistrito();
                 
             case 'nacionalidad':
                 return $this->employee->getNacionalidades();
@@ -149,10 +120,7 @@ class EmployeeDetails {
                 return $this->employee->getCargos();
                 
             default:
-                // Para otras tablas, usar el método genérico
                 $opciones = $this->employee->getOptions($tabla, $valor_campo, $texto_campo);
-                
-                // Formatear los datos para tener la estructura value/text
                 $resultado = [];
                 foreach ($opciones as $opcion) {
                     $resultado[] = [
@@ -160,7 +128,6 @@ class EmployeeDetails {
                         'text' => $opcion[$texto_campo]
                     ];
                 }
-                
                 return $resultado;
         }
     }
@@ -228,13 +195,11 @@ class EmployeeDetails {
      * Renderizar el formulario de detalles de empleado
      */
     public function renderForm() {
-        // Inicializar los componentes con los datos del empleado
         $personalInfo = new EmployeePersonalInfo($this->employee->getData(), $this);
         $contactInfo = new EmployeeContactInfo($this->employee->getData());
         $addressInfo = new EmployeeAddressInfo($this->employee->getData(), $this);
         $workInfo = new EmployeeWorkInfo($this->employee->getData(), $this);
         
-        // Renderizar el formulario
         ?>
         <!DOCTYPE html>
         <html lang="es">
@@ -247,16 +212,13 @@ class EmployeeDetails {
             <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
         </head>
         <body>
-            <!-- Botón para mostrar/ocultar el sidebar en pantallas pequeñas -->
             <button class="sidebar-toggle" id="sidebar-toggle">
                 <span class="material-icons">menu</span>
             </button>
 
-            <!-- Capa semi-transparente para dispositivos móviles -->
             <div class="sidebar-blur" id="sidebar-blur"></div>
         
             <?php 
-            // Renderizar el sidebar indicando la página activa
             renderSidebar('empleados'); 
             ?>
             
@@ -269,7 +231,6 @@ class EmployeeDetails {
                             <input type="hidden" name="employee_id" value="<?php echo $this->employeeId; ?>">
                             
                             <?php 
-                            // Renderizar cada componente
                             $personalInfo->render();
                             $contactInfo->render();
                             $addressInfo->render();
@@ -286,222 +247,138 @@ class EmployeeDetails {
             </div>
             
             <script>
-            // Funciones de validación para inputs
-            function validarSoloNumeros(valor) {
-                // Eliminar cualquier carácter que no sea un número
-                return valor.replace(/[^0-9]/g, '');
-            }
-
-            function validarSoloLetras(valor) {
-                // Eliminar cualquier carácter que no sea una letra o espacio
-                return valor.replace(/[^a-zA-ZáéíóúÁÉÍÓÚüÜñÑ\s]/g, '');
-            }
-            
-            // Validación para prevenir envío de formulario con opciones "Seleccionar" o campos obligatorios vacíos
             document.addEventListener('DOMContentLoaded', function() {
-                const employeeForm = document.getElementById('employeeForm');
-                
-                // Aplicar estilos iniciales a los selects vacíos
-                const selectElements = employeeForm.querySelectorAll('select');
-                selectElements.forEach(function(select) {
-                    if (select.value === '') {
-                        select.classList.add('invalid-select');
-                    }
-                    
-                    select.addEventListener('change', function() {
-                        if (this.value !== '') {
-                            this.classList.remove('invalid-select');
-                        } else {
-                            this.classList.add('invalid-select');
-                        }
-                    });
-                });
-                
-                // Campos que deben ser excluidos de la validación obligatoria
-                const excludedFields = ['nombre2', 'apellido2', 'casa', 'comunidad'];
-                
-                // Obtener todos los inputs con atributo 'required'
-                let inputElements = Array.from(employeeForm.querySelectorAll('input[required]'));
-                
-                // Filtrar los campos excluidos
-                inputElements = inputElements.filter(input => {
-                    return !excludedFields.includes(input.id) && !excludedFields.includes(input.name);
-                });
-                
-                // Manejo especial para el apellido de casada
-                const usaAcSelect = document.getElementById('usa_ac');
-                const apellidoCasadaField = document.getElementById('apellidoc');
-                
-                // Función para actualizar la validación del apellido de casada
-                function updateApellidoCasadaValidation() {
-                    if (usaAcSelect && apellidoCasadaField) {
-                        if (usaAcSelect.value === '1') { // Si usa apellido de casada es "Sí"
-                            // Agregar al array de inputs a validar si no está
-                            const index = inputElements.indexOf(apellidoCasadaField);
-                            if (index === -1) {
-                                inputElements.push(apellidoCasadaField);
-                            }
-                            
-                            // Verificar estado actual y aplicar estilo si está vacío
-                            if (apellidoCasadaField.value.trim() === '') {
-                                apellidoCasadaField.classList.add('invalid-input');
-                            } else {
-                                apellidoCasadaField.classList.remove('invalid-input');
-                            }
-                        } else {
-                            // Si no usa apellido de casada, quitarlo del array de validación
-                            const index = inputElements.indexOf(apellidoCasadaField);
-                            if (index > -1) {
-                                inputElements.splice(index, 1);
-                            }
-                            // Y quitar cualquier estilo de error
-                            apellidoCasadaField.classList.remove('invalid-input');
-                        }
-                    }
-                }
-                
-                // Configurar evento para el cambio en usa_ac
-                if (usaAcSelect) {
-                    usaAcSelect.addEventListener('change', updateApellidoCasadaValidation);
-                    // Ejecutar una vez al inicio para establecer el estado inicial
-                    updateApellidoCasadaValidation();
-                }
-                
-                // Aplicar estilos iniciales a todos los inputs requeridos vacíos
-                inputElements.forEach(function(input) {
-                    // Verificar estado inicial
-                    if (input.value.trim() === '') {
-                        input.classList.add('invalid-input');
-                    }
-                    
-                    // Escuchar cambios en tiempo real
-                    input.addEventListener('input', function() {
-                        if (this.value.trim() !== '') {
-                            this.classList.remove('invalid-input');
-                        } else {
-                            this.classList.add('invalid-input');
-                        }
-                    });
-                });
-                
-                // Validación al enviar el formulario
-                employeeForm.addEventListener('submit', function(event) {
-                    let formValid = true;
-                    let firstInvalidField = null;
-                    
-                    // Validar selects
-                    selectElements.forEach(function(select) {
-                        if (select.value === '') {
-                            formValid = false;
-                            select.classList.add('invalid-select');
-                            
-                            if (!firstInvalidField) {
-                                firstInvalidField = select;
-                            }
-                        } else {
-                            select.classList.remove('invalid-select');
-                        }
-                    });
-                    
-                    // Validar inputs requeridos
-                    inputElements.forEach(function(input) {
-                        // Excepción para apellido de casada cuando no se usa
-                        if (input.id === 'apellidoc' && usaAcSelect && usaAcSelect.value === '0') {
-                            return;
-                        }
-                        
-                        if (input.value.trim() === '') {
-                            formValid = false;
-                            input.classList.add('invalid-input');
-                            
-                            if (!firstInvalidField) {
-                                firstInvalidField = input;
-                            }
-                        } else {
-                            input.classList.remove('invalid-input');
-                        }
-                    });
-                    
-                    // Si hay campos inválidos, prevenir envío y mostrar mensaje
-                    if (!formValid) {
-                        event.preventDefault();
-                        alert('No se permite enviar el formulario con campos obligatorios vacíos. Por favor, complete todos los campos requeridos.');
-                        
-                        // Hacer scroll al primer campo inválido
-                        if (firstInvalidField) {
-                            firstInvalidField.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                            firstInvalidField.focus();
-                        }
-                    }
-                });
-            });
-            
-            // Script para cargar los distritos y corregimientos de forma dinámica
-            document.addEventListener('DOMContentLoaded', function() {
+                // Selectores de elementos
                 const provinciaSelect = document.getElementById('provincia');
                 const distritoSelect = document.getElementById('distrito');
                 const corregimientoSelect = document.getElementById('corregimiento');
-                
-                // Función para cargar distritos según la provincia seleccionada
-                provinciaSelect.addEventListener('change', function() {
-                    const provinciaId = this.value;
-                    
-                    // Limpiar las opciones actuales
-                    distritoSelect.innerHTML = '<option value="">Seleccione un distrito</option>';
-                    corregimientoSelect.innerHTML = '<option value="">Seleccione un corregimiento</option>';
-                    
-                    // Obtener distritos de la provincia seleccionada
-                    if (provinciaId) {
-                        // Realizar petición para obtener distritos
-                        window.location.href = `${window.location.pathname}?id=<?php echo $this->employeeId; ?>&load_distritos=${provinciaId}`;
-                    }
-                });
-                
-                // Función para cargar corregimientos según el distrito seleccionado
-                distritoSelect.addEventListener('change', function() {
-                    const distritoId = this.value;
-                    
-                    // Limpiar las opciones actuales
-                    corregimientoSelect.innerHTML = '<option value="">Seleccione un corregimiento</option>';
-                    
-                    // Obtener corregimientos del distrito seleccionado
-                    if (distritoId) {
-                        // Realizar petición para obtener corregimientos
-                        window.location.href = `${window.location.pathname}?id=<?php echo $this->employeeId; ?>&load_corregimientos=${distritoId}`;
-                    }
-                });
-            });
-            
-            // Funcionalidad del sidebar responsive
-            document.addEventListener('DOMContentLoaded', function() {
+                const departamentoSelect = document.getElementById('departamento');
+                const cargoSelect = document.getElementById('cargo');
+                const employeeId = document.querySelector('input[name="employee_id"]').value;
                 const sidebarToggle = document.getElementById('sidebar-toggle');
                 const sidebar = document.querySelector('.sidebar');
                 const sidebarBlur = document.getElementById('sidebar-blur');
+
+                /**
+                 * Popula un elemento select con opciones.
+                 * Detecta automáticamente los campos de valor y texto.
+                 */
+                function populateSelect(selectElement, options, defaultOptionText) {
+                    selectElement.innerHTML = `<option value="">${defaultOptionText}</option>`;
+                    
+                    if (!options || options.length === 0) {
+                        selectElement.innerHTML = `<option value="">${defaultOptionText.replace('Seleccione', 'No hay')}</option>`;
+                        return;
+                    }
+                    
+                    const firstOption = options[0];
+                    let valueField, textField;
+                    
+                    if (firstOption.codigo_distrito !== undefined) {
+                        valueField = 'codigo_distrito'; textField = 'nombre_distrito';
+                    } else if (firstOption.codigo_corregimiento !== undefined) {
+                        valueField = 'codigo_corregimiento'; textField = 'nombre_corregimiento';
+                    } else if (firstOption.codigo !== undefined) {
+                        valueField = 'codigo'; textField = 'nombre';
+                    } else {
+                        // Fallback genérico (aunque no se usa en los casos actuales de fetch)
+                        valueField = Object.keys(firstOption).find(key => key.includes('id') || key.includes('codigo')) || 'value';
+                        textField = Object.keys(firstOption).find(key => key.includes('nombre') || key.includes('text')) || 'text';
+                    }
+                    
+                    options.forEach(option => {
+                        const value = option[valueField];
+                        const text = option[textField];
+                        const optionElement = document.createElement('option');
+                        optionElement.value = value;
+                        optionElement.textContent = text;
+                        selectElement.appendChild(optionElement);
+                    });
+                }
+
+                /**
+                 * Realiza una llamada fetch para obtener datos y poblar un select.
+                 */
+                function fetchAndPopulate(targetSelect, ajaxAction, paramName, paramValue, defaultOptionText) {
+                    targetSelect.innerHTML = '<option value="">Cargando...</option>';
+
+                    if (!paramValue) {
+                        targetSelect.innerHTML = `<option value="">${defaultOptionText}</option>`;
+                        // Si es el select de distrito, también limpiar corregimiento
+                        if (targetSelect === distritoSelect) {
+                            corregimientoSelect.innerHTML = '<option value="">Seleccione un corregimiento</option>';
+                        }
+                        return;
+                    }
+
+                    fetch(`employee_details.php?id=${employeeId}&ajax=${ajaxAction}&${paramName}=${paramValue}`)
+                        .then(response => {
+                            if (!response.ok) throw new Error(`Error HTTP: ${response.status}`);
+                            return response.json();
+                        })
+                        .then(data => {
+                            if (data.status === 'ok') {
+                                populateSelect(targetSelect, data.data, defaultOptionText);
+                            } else {
+                                targetSelect.innerHTML = '<option value="">Error al cargar</option>';
+                                console.error('Error en la respuesta AJAX:', data.message);
+                            }
+                        })
+                        .catch(error => {
+                            targetSelect.innerHTML = '<option value="">Error de red</option>';
+                            console.error('Error en fetch:', error);
+                        });
+                }
+
+                // --- Event Listeners para selects dependientes ---
+
+                provinciaSelect.addEventListener('change', function() {
+                    fetchAndPopulate(distritoSelect, 'get_distritos', 'provincia_id', this.value, 'Seleccione un distrito');
+                    // Limpiar corregimiento al cambiar provincia
+                    corregimientoSelect.innerHTML = '<option value="">Seleccione un corregimiento</option>';
+                });
+
+                distritoSelect.addEventListener('change', function() {
+                    fetchAndPopulate(corregimientoSelect, 'get_corregimientos', 'distrito_id', this.value, 'Seleccione un corregimiento');
+                });
                 
-                // Función para mostrar/ocultar el sidebar
+                departamentoSelect.addEventListener('change', function() {
+                    fetchAndPopulate(cargoSelect, 'get_cargos', 'departamento_id', this.value, 'Seleccione un cargo');
+                });
+
+                // --- Lógica del Sidebar ---
+                
                 sidebarToggle.addEventListener('click', function() {
                     sidebar.classList.toggle('active');
                     sidebarBlur.classList.toggle('active');
                 });
                 
-                // Cerrar el sidebar al hacer clic en el área semi-transparente
                 sidebarBlur.addEventListener('click', function() {
                     sidebar.classList.remove('active');
                     sidebarBlur.classList.remove('active');
                 });
                 
-                // Ajustar la visualización en cambios de tamaño de ventana
+                // Ajustar sidebar en resize
                 window.addEventListener('resize', function() {
                     if (window.innerWidth > 480) {
-                        sidebarBlur.classList.remove('active');
-                        // En pantallas mayores a 480px, el sidebar siempre es visible
-                        if (window.innerWidth <= 768) {
-                            sidebar.classList.remove('active');
+                        sidebarBlur.classList.remove('active'); // Ocultar blur en pantallas más grandes
+                        if (window.innerWidth > 768) {
+                            sidebar.classList.add('active'); // Mostrar sidebar en pantallas grandes
                         } else {
-                            sidebar.classList.add('active');
+                            sidebar.classList.remove('active'); // Ocultar sidebar en tablets
                         }
+                    } else {
+                         // En pantallas pequeñas (<480), no forzar estado, dejar que el toggle funcione
                     }
                 });
+                
+                // Estado inicial del sidebar basado en el tamaño de la ventana al cargar
+                 if (window.innerWidth > 768) {
+                     sidebar.classList.add('active');
+                 } else {
+                     sidebar.classList.remove('active');
+                 }
+
             });
             </script>
         </body>
@@ -517,3 +394,4 @@ if (isset($_GET['id'])) {
 } else {
     echo "ID de empleado no proporcionado.";
 }
+?>
