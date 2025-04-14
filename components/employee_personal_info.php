@@ -38,6 +38,8 @@ class EmployeePersonalInfo {
                 <div class="form-group">
                     <label for="cedula">Cédula:</label>
                     <input type="text" id="cedula" value="<?php echo $cedula_formateada; ?>" disabled>
+                    <!-- Campo oculto para enviar el valor real de la cédula -->
+                    <input type="hidden" id="cedula_hidden" name="cedula" value="<?php echo $this->employeeData['cedula']; ?>">
                 </div>
                 
                 <div class="form-group">
@@ -179,12 +181,16 @@ class EmployeePersonalInfo {
                 const tomo = document.getElementById('tomo').value;
                 const asiento = document.getElementById('asiento').value;
                 const cedulaInput = document.getElementById('cedula');
+                const cedulaHiddenInput = document.getElementById('cedula_hidden');
 
                 // Construir la cédula formateada solo si hay algún valor
                 if (prefijo || tomo || asiento) {
-                    cedulaInput.value = `${prefijo}-${tomo}-${asiento}`;
+                    const cedulaValue = `${prefijo}-${tomo}-${asiento}`;
+                    cedulaInput.value = cedulaValue;
+                    cedulaHiddenInput.value = cedulaValue;
                 } else {
                     cedulaInput.value = ''; // Limpiar si todos están vacíos
+                    cedulaHiddenInput.value = ''; // Limpiar el campo oculto también
                 }
             }
 
