@@ -2,7 +2,9 @@
 // Incluir archivos de configuración
 require_once '../../config/config.php';
 require_once '../../config/validation.php';
+require_once '../../config/BdHandler.php';
 require_once '../../class/session.php';
+require_once '../../class/employee.php';
 
 // Verificar sesión del usuario
 $sesion = new Session();
@@ -23,73 +25,144 @@ require_once '../../components/employee_work_info.php';
  * Clase para gestionar los detalles de empleados
  */
 class EmployeeDetails {
-    private $conn;
+    private $employee;
     private $employeeId;
-    private $employeeData;
     
     /**
      * Constructor de la clase
      */
-    public function __construct($connection) {
-        $this->conn = $connection;
-        
+    public function __construct() {
         // Obtener el ID del empleado desde la URL
         if(isset($_GET['id'])) {
             $this->employeeId = $_GET['id'];
-            $this->loadEmployeeData();
+            // Crear una instancia de la clase Employee
+            $this->employee = new Employee($this->employeeId);
+            
+            // Manejar solicitudes de cargar distritos/corregimientos
+            $this->handleLocationRequests();
+        } else {
+            echo "ID de empleado no proporcionado.";
+            exit;
         }
     }
     
     /**
-     * Cargar los datos del empleado desde la base de datos
+     * Maneja las solicitudes de carga de distritos y corregimientos
      */
-    private function loadEmployeeData() {
-        if(!empty($this->employeeId)) {
-            $query = "SELECT e.*, 
-                      p.nombre_provincia, 
-                      d.nombre_distrito, 
-                      c.nombre_corregimiento,
-                      n.pais as nombre_nacionalidad,
-                      dep.nombre as nombre_departamento,
-                      car.nombre as nombre_cargo
-                      FROM empleados e
-                      LEFT JOIN provincia p ON e.provincia = p.codigo_provincia
-                      LEFT JOIN distrito d ON e.distrito = d.codigo_distrito
-                      LEFT JOIN corregimiento c ON e.corregimiento = c.codigo_corregimiento
-                      LEFT JOIN nacionalidad n ON e.nacionalidad = n.codigo
-                      LEFT JOIN departamento dep ON e.departamento = dep.codigo
-                      LEFT JOIN cargo car ON e.cargo = car.codigo
-                      WHERE e.cedula = ?";
+    private function handleLocationRequests() {
+        if (isset($_GET['load_distritos'])) {
+            $provincia_id = $_GET['load_distritos'];
+            $distritos = $this->employee->getDistritos($provincia_id);
             
-            $stmt = $this->conn->prepare($query);
-            $stmt->bind_param("s", $this->employeeId);
-            $stmt->execute();
-            $result = $stmt->get_result();
-            
-            if($result->num_rows > 0) {
-                $this->employeeData = $result->fetch_assoc();
-            } else {
-                echo "No se encontró el empleado.";
-                exit;
-            }
+            // Guardar distritos en la sesión para mostrarlos cuando se recargue la página
+            $_SESSION['distritos'] = $distritos;
+            $_SESSION['provincia_seleccionada'] = $provincia_id;
         }
+        
+        if (isset($_GET['load_corregimientos'])) {
+            $distrito_id = $_GET['load_corregimientos'];
+            $corregimientos = $this->employee->getCorregimientos($distrito_id);
+            
+            // Guardar corregimientos en la sesión para mostrarlos cuando se recargue la página
+            $_SESSION['corregimientos'] = $corregimientos;
+            $_SESSION['distrito_seleccionado'] = $distrito_id;
+        }
+        
+        // Manejar solicitud para cargar cargos según el departamento seleccionado
+        if (isset($_GET['load_cargos'])) {
+            $departamento_id = $_GET['load_cargos'];
+            $cargos = $this->employee->getCargos($departamento_id);
+            
+            // Guardar cargos en la sesión para mostrarlos cuando se recargue la página
+            $_SESSION['cargos'] = $cargos;
+            $_SESSION['departamento_seleccionado'] = $departamento_id;
+        }
+    }
+    
+    /**
+     * Obtener las opciones de distritos para la provincia seleccionada
+     */
+    public function getDistritosForSelectedProvincia() {
+        $provincia_id = $this->employee->get('provincia');
+        
+        // Si hay una provincia en la sesión, usarla
+        if (isset($_SESSION['provincia_seleccionada'])) {
+            $provincia_id = $_SESSION['provincia_seleccionada'];
+        }
+        
+        // Si hay distritos en la sesión, mostrarlos
+        if (isset($_SESSION['distritos'])) {
+            $distritos = $_SESSION['distritos'];
+        } else {
+            // Si no, obtener distritos para la provincia actual
+            $distritos = $this->employee->getDistritos($provincia_id);
+        }
+        
+        return $distritos;
+    }
+    
+    /**
+     * Obtener las opciones de corregimientos para el distrito seleccionado
+     */
+    public function getCorregimientosForSelectedDistrito() {
+        $distrito_id = $this->employee->get('distrito');
+        
+        // Si hay un distrito en la sesión, usarlo
+        if (isset($_SESSION['distrito_seleccionado'])) {
+            $distrito_id = $_SESSION['distrito_seleccionado'];
+        }
+        
+        // Si hay corregimientos en la sesión, mostrarlos
+        if (isset($_SESSION['corregimientos'])) {
+            $corregimientos = $_SESSION['corregimientos'];
+        } else {
+            // Si no, obtener corregimientos para el distrito actual
+            $corregimientos = $this->employee->getCorregimientos($distrito_id);
+        }
+        
+        return $corregimientos;
     }
     
     /**
      * Obtener las opciones para los campos de selección
      */
-    public function getOptions($table, $code_field, $name_field) {
-        $options = [];
-        $query = "SELECT $code_field, $name_field FROM $table ORDER BY $name_field";
-        $result = $this->conn->query($query);
-        
-        if ($result && $result->num_rows > 0) {
-            while($row = $result->fetch_assoc()) {
-                $options[$row[$code_field]] = $row[$name_field];
-            }
+    public function getOptions($tabla, $valor_campo, $texto_campo) {
+        // Utilizar la clase Employee para obtener opciones
+        // según el tipo de tabla solicitada
+        switch ($tabla) {
+            case 'provincia':
+                return $this->employee->getProvincias();
+                
+            case 'distrito':
+                return $this->employee->getDistritos();
+                
+            case 'corregimiento':
+                return $this->employee->getCorregimientos();
+                
+            case 'nacionalidad':
+                return $this->employee->getNacionalidades();
+                
+            case 'departamento':
+                return $this->employee->getDepartamentos();
+                
+            case 'cargo':
+                return $this->employee->getCargos();
+                
+            default:
+                // Para otras tablas, usar el método genérico
+                $opciones = $this->employee->getOptions($tabla, $valor_campo, $texto_campo);
+                
+                // Formatear los datos para tener la estructura value/text
+                $resultado = [];
+                foreach ($opciones as $opcion) {
+                    $resultado[] = [
+                        'value' => $opcion[$valor_campo],
+                        'text' => $opcion[$texto_campo]
+                    ];
+                }
+                
+                return $resultado;
         }
-        
-        return $options;
     }
     
     /**
@@ -97,7 +170,9 @@ class EmployeeDetails {
      */
     public function generateSelectOptions($options, $selected_value) {
         $html = '<option value="">Seleccionar</option>';
-        foreach($options as $value => $text) {
+        foreach($options as $option) {
+            $value = $option['value'];
+            $text = $option['text'];
             $selected = ($value == $selected_value) ? 'selected' : '';
             $html .= "<option value='$value' $selected>$text</option>";
         }
@@ -108,64 +183,45 @@ class EmployeeDetails {
      * Generar opciones para género
      */
     public function getGenderOptions() {
-        $options = [
-            '0' => 'Masculino',
-            '1' => 'Femenino'
-        ];
-        return $this->generateSelectOptions($options, $this->employeeData['genero']);
+        $selected = $this->employee->get('genero');
+        $options = $this->employee->getGenderOptions();
+        return $this->generateSelectOptions($options, $selected);
     }
     
     /**
      * Generar opciones para estado civil
      */
     public function getCivilStatusOptions() {
-        $options = [
-            '0' => 'Soltero/a',
-            '1' => 'Casado/a',
-            '2' => 'Divorciado/a',
-            '3' => 'Viudo/a'
-        ];
-        return $this->generateSelectOptions($options, $this->employeeData['estado_civil']);
+        $selected = $this->employee->get('estado_civil');
+        $options = $this->employee->getCivilStatusOptions();
+        return $this->generateSelectOptions($options, $selected);
     }
     
     /**
      * Generar opciones para tipo de sangre
      */
     public function getBloodTypeOptions() {
-        $options = [
-            'Desconocido' => 'Desconocido',
-            'O+' => 'O+',
-            'O-' => 'O-',
-            'A+' => 'A+',
-            'A-' => 'A-',
-            'B+' => 'B+',
-            'B-' => 'B-',
-            'AB+' => 'AB+',
-            'AB-' => 'AB-'
-        ];
-        return $this->generateSelectOptions($options, $this->employeeData['tipo_sangre']);
+        $selected = $this->employee->get('tipo_sangre');
+        $options = $this->employee->getBloodTypeOptions();
+        return $this->generateSelectOptions($options, $selected);
     }
     
     /**
      * Generar opciones para usa apellido de casada
      */
     public function getUsaAcOptions() {
-        $options = [
-            '0' => 'No',
-            '1' => 'Sí'
-        ];
-        return $this->generateSelectOptions($options, $this->employeeData['usa_ac']);
+        $selected = $this->employee->get('usa_ac');
+        $options = $this->employee->getUsaAcOptions();
+        return $this->generateSelectOptions($options, $selected);
     }
     
     /**
      * Generar opciones para estado de empleado
      */
     public function getStatusOptions() {
-        $options = [
-            '0' => 'Inactivo',
-            '1' => 'Activo'
-        ];
-        return $this->generateSelectOptions($options, $this->employeeData['estado']);
+        $selected = $this->employee->get('estado');
+        $options = $this->employee->getStatusOptions();
+        return $this->generateSelectOptions($options, $selected);
     }
     
     /**
@@ -173,10 +229,10 @@ class EmployeeDetails {
      */
     public function renderForm() {
         // Inicializar los componentes con los datos del empleado
-        $personalInfo = new EmployeePersonalInfo($this->employeeData, $this);
-        $contactInfo = new EmployeeContactInfo($this->employeeData);
-        $addressInfo = new EmployeeAddressInfo($this->employeeData, $this);
-        $workInfo = new EmployeeWorkInfo($this->employeeData, $this);
+        $personalInfo = new EmployeePersonalInfo($this->employee->getData(), $this);
+        $contactInfo = new EmployeeContactInfo($this->employee->getData());
+        $addressInfo = new EmployeeAddressInfo($this->employee->getData(), $this);
+        $workInfo = new EmployeeWorkInfo($this->employee->getData(), $this);
         
         // Renderizar el formulario
         ?>
@@ -210,6 +266,8 @@ class EmployeeDetails {
                         <h1 class="text-center">Detalles del Empleado</h1>
                         
                         <form id="employeeForm" method="POST" action="update_employee.php">
+                            <input type="hidden" name="employee_id" value="<?php echo $this->employeeId; ?>">
+                            
                             <?php 
                             // Renderizar cada componente
                             $personalInfo->render();
@@ -392,17 +450,11 @@ class EmployeeDetails {
                     distritoSelect.innerHTML = '<option value="">Seleccione un distrito</option>';
                     corregimientoSelect.innerHTML = '<option value="">Seleccione un corregimiento</option>';
                     
-                    // Realizar petición AJAX para obtener distritos
-                    fetch(`get_distritos.php?provincia=${provinciaId}`)
-                        .then(response => response.json())
-                        .then(data => {
-                            data.forEach(distrito => {
-                                const option = document.createElement('option');
-                                option.value = distrito.codigo_distrito;
-                                option.textContent = distrito.nombre_distrito;
-                                distritoSelect.appendChild(option);
-                            });
-                        });
+                    // Obtener distritos de la provincia seleccionada
+                    if (provinciaId) {
+                        // Realizar petición para obtener distritos
+                        window.location.href = `${window.location.pathname}?id=<?php echo $this->employeeId; ?>&load_distritos=${provinciaId}`;
+                    }
                 });
                 
                 // Función para cargar corregimientos según el distrito seleccionado
@@ -412,17 +464,11 @@ class EmployeeDetails {
                     // Limpiar las opciones actuales
                     corregimientoSelect.innerHTML = '<option value="">Seleccione un corregimiento</option>';
                     
-                    // Realizar petición AJAX para obtener corregimientos
-                    fetch(`get_corregimientos.php?distrito=${distritoId}`)
-                        .then(response => response.json())
-                        .then(data => {
-                            data.forEach(corregimiento => {
-                                const option = document.createElement('option');
-                                option.value = corregimiento.codigo_corregimiento;
-                                option.textContent = corregimiento.nombre_corregimiento;
-                                corregimientoSelect.appendChild(option);
-                            });
-                        });
+                    // Obtener corregimientos del distrito seleccionado
+                    if (distritoId) {
+                        // Realizar petición para obtener corregimientos
+                        window.location.href = `${window.location.pathname}?id=<?php echo $this->employeeId; ?>&load_corregimientos=${distritoId}`;
+                    }
                 });
             });
             
@@ -464,103 +510,10 @@ class EmployeeDetails {
     }
 }
 
-// Iniciar la conexión a la base de datos
-// $config = new Config();
-// $conn = $config->getConnection();
-
-// // Crear instancia de EmployeeDetails y renderizar el formulario
-// $employeeDetails = new EmployeeDetails($conn);
-
-$_GET['id'] = 'V12345678';
-
-class FakeResult {
-    private $data;
-    private $index = 0;
-    public $num_rows;
-
-    public function __construct($data) {
-        $this->data = $data;
-        $this->num_rows = count($data);
-    }
-
-    public function fetch_assoc() {
-        if ($this->index < count($this->data)) {
-            return $this->data[$this->index++];
-        }
-        return null;
-    }
+// Crear instancia de EmployeeDetails y renderizar el formulario
+if (isset($_GET['id'])) {
+    $employeeDetails = new EmployeeDetails();
+    $employeeDetails->renderForm();
+} else {
+    echo "ID de empleado no proporcionado.";
 }
-
-class FakeStmt {
-    public function bind_param($types, &$param) {}
-    public function execute() {}
-    public function get_result() {
-        $fakeData = [
-            [
-                'cedula'       => 'V12345678',
-                'prefijo'      => 'Mr.',
-                'tomo'         => '001',
-                'asiento'      => '010',
-                'nombre1'      => '',
-                'nombre2'      => 'Carlos',
-                'apellido1'    => 'Perez',
-                'apellido2'    => 'Lopez',
-                'apellidoc'    => 'Martinez',
-                'usa_ac'       => '1',
-                'genero'       => '1',
-                'estado_civil' => '2',
-                'tipo_sangre'  => 'Desconocido',
-                'f_nacimiento' => '1985-05-15',
-                'nacionalidad' => '1',
-                'celular'      => '04141234567',
-                'telefono'     => '02121234567',
-                'correo'       => 'juan@example.com',
-                'provincia'    => '1',
-                'distrito'     => '1',
-                'corregimiento'=> '1',
-                'calle'        => 'Av. Siempre Viva',
-                'casa'         => '42',
-                'comunidad'    => 'Comunidad1',
-                'cargo'        => '1',
-                'departamento' => '1',
-                'f_contra'     => '2010-03-20',
-                'estado'       => '1'
-            ]
-        ];
-        return new FakeResult($fakeData);
-    }
-}
-
-class FakeDBConnection {
-    public function prepare($query) {
-        return new FakeStmt();
-    }
-
-    public function query($query) {
-        if (strpos($query, 'FROM nacionalidad') !== false) {
-            $data = [['codigo' => '1', 'pais' => 'Venezolano']];
-        } elseif (strpos($query, 'FROM departamento') !== false) {
-            $data = [['codigo' => '1', 'nombre' => 'Recursos Humanos']];
-        } elseif (strpos($query, 'FROM cargo') !== false) {
-            $data = [['codigo' => '1', 'nombre' => 'Gerente']];
-        } elseif (strpos($query, 'FROM provincia') !== false) {
-            $data = [['codigo_provincia' => '1', 'nombre_provincia' => 'Provincia1']];
-        } elseif (strpos($query, 'FROM distrito') !== false) {
-            $data = [['codigo_distrito' => '1', 'nombre_distrito' => 'Distrito1']];
-        } elseif (strpos($query, 'FROM corregimiento') !== false) {
-            $data = [['codigo_corregimiento' => '1', 'nombre_corregimiento' => 'Corregimiento1']];
-        } else {
-            $data = [];
-        }
-        return new FakeResult($data);
-    }
-}
-
-$conn = new FakeDBConnection();
-
-$employee = new EmployeeDetails($conn);
-$employeeDetails = $employee;
-
-
-$employeeDetails->renderForm();
-?>
