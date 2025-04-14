@@ -38,7 +38,6 @@ class EmployeePersonalInfo {
                 <div class="form-group">
                     <label for="cedula">Cédula:</label>
                     <input type="text" id="cedula" value="<?php echo $cedula_formateada; ?>" disabled>
-                    <!-- Campo oculto para enviar el valor real de la cédula -->
                     <input type="hidden" id="cedula_hidden" name="cedula" value="<?php echo $this->employeeData['cedula']; ?>">
                 </div>
                 
@@ -81,21 +80,6 @@ class EmployeePersonalInfo {
                     <input type="text" id="apellido2" name="apellido2" value="<?php echo $this->employeeData['apellido2']; ?>" oninput="this.value = validarSoloLetras(this.value)">
                 </div>
             </div>
-            
-            <div class="form-row">
-                <div class="form-group">
-                    <label for="apellidoc">Apellido de Casada:</label>
-                    <input type="text" id="apellidoc" name="apellidoc" value="<?php echo $this->employeeData['apellidoc']; ?>" oninput="this.value = validarSoloLetras(this.value)">
-                </div>
-                
-                <div class="form-group">
-                    <label for="usa_ac">Usa Apellido de Casada:</label>
-                    <select id="usa_ac" name="usa_ac">
-                        <?php echo $this->parent->getUsaAcOptions(); ?>
-                    </select>
-                </div>
-            </div>
-            
             <div class="form-row">
                 <div class="form-group">
                     <label for="genero">Género:</label>
@@ -115,6 +99,20 @@ class EmployeePersonalInfo {
                     <label for="tipo_sangre">Tipo de Sangre:</label>
                     <select id="tipo_sangre" name="tipo_sangre">
                         <?php echo $this->parent->getBloodTypeOptions(); ?>
+                    </select>
+                </div>
+            </div>
+                      
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="apellidoc">Apellido de Casada:</label>
+                    <input type="text" id="apellidoc" name="apellidoc" value="<?php echo $this->employeeData['apellidoc']; ?>" oninput="this.value = validarSoloLetras(this.value)">
+                </div>
+                
+                <div class="form-group">
+                    <label for="usa_ac">Usa Apellido de Casada:</label>
+                    <select id="usa_ac" name="usa_ac">
+                        <?php echo $this->parent->getUsaAcOptions(); ?>
                     </select>
                 </div>
             </div>
@@ -194,8 +192,55 @@ class EmployeePersonalInfo {
                 }
             }
 
-            // Llama a updateCedula una vez al cargar para inicializar el campo cédula si hay datos
-            document.addEventListener('DOMContentLoaded', updateCedula);
+            function toggleApellidoCasada() {
+                const genero = document.getElementById('genero').value;
+                const estadoCivil = document.getElementById('estado_civil').value;
+                const apellidoc = document.getElementById('apellidoc');
+                const usaAc = document.getElementById('usa_ac');
+                
+                // Condición: solo habilitar si es mujer (1) y casada (1) o viuda (3)
+                const esMujer = genero === '1';
+                const esCasadaOViuda = estadoCivil === '1' || estadoCivil === '3';
+                const cumpleCondicionBase = esMujer && esCasadaOViuda;
+                
+                // Si no cumple la condición base, deshabilitamos ambos campos
+                if (!cumpleCondicionBase) {
+                    apellidoc.disabled = true;
+                    usaAc.disabled = true;
+                    apellidoc.classList.add('disabled-field');
+                    usaAc.classList.add('disabled-field');
+                    apellidoc.value = '';
+                    usaAc.value = '0'; // Establecer a "No"
+                    return;
+                }
+                
+                // Si cumple condición base, habilitamos el select de "Usa Apellido de Casada"
+                usaAc.disabled = false;
+                usaAc.classList.remove('disabled-field');
+                
+                // Verificamos el valor de "Usa Apellido de Casada"
+                const usaApellidoCasada = usaAc.value === '1';
+                
+                // Habilitamos o deshabilitamos el campo de apellido casada según la selección
+                apellidoc.disabled = !usaApellidoCasada;
+                
+                if (usaApellidoCasada) {
+                    apellidoc.classList.remove('disabled-field');
+                } else {
+                    apellidoc.classList.add('disabled-field');
+                    apellidoc.value = ''; // Limpiar el valor si está deshabilitado
+                }
+            }
+
+            document.addEventListener('DOMContentLoaded', function() {
+                updateCedula();
+                toggleApellidoCasada(); // Ejecutar al cargar la página
+                
+                // Añadir event listeners para los selectores
+                document.getElementById('genero').addEventListener('change', toggleApellidoCasada);
+                document.getElementById('estado_civil').addEventListener('change', toggleApellidoCasada);
+                document.getElementById('usa_ac').addEventListener('change', toggleApellidoCasada);
+            });
         </script>
         <?php
     }
