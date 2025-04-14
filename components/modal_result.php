@@ -6,21 +6,42 @@
  * @param string $mensaje Texto del mensaje
  * @param string $pagina_destino URL a la que redireccionar si el usuario confirma
  * @param string $titulo_modal Título de la modal
+ * @param array $opciones_navegacion Opciones de navegación personalizadas
  */
 class ModalResult {
     private $tipo_mensaje;
     private $mensaje;
     private $pagina_destino;
     private $titulo_modal;
+    private $opciones_navegacion;
     
     /**
      * Constructor de la clase
+     * 
+     * @param string $tipo_mensaje Tipo de mensaje (success o error)
+     * @param string $mensaje Texto del mensaje
+     * @param string $pagina_destino URL predeterminada para redirección
+     * @param string $titulo_modal Título de la modal
+     * @param array $opciones_navegacion Lista de opciones de navegación (url, texto, clase)
      */
-    public function __construct($tipo_mensaje, $mensaje, $pagina_destino, $titulo_modal = 'Resultado de la operación') {
+    public function __construct($tipo_mensaje, $mensaje, $pagina_destino, $titulo_modal = 'Resultado de la operación', $opciones_navegacion = []) {
         $this->tipo_mensaje = $tipo_mensaje;
         $this->mensaje = $mensaje;
         $this->pagina_destino = $pagina_destino;
         $this->titulo_modal = $titulo_modal;
+        
+        // Si no se especifican opciones, crear una opción predeterminada
+        if (empty($opciones_navegacion)) {
+            $this->opciones_navegacion = [
+                [
+                    'url' => $pagina_destino,
+                    'texto' => 'Aceptar',
+                    'clase' => 'btn-primary'
+                ]
+            ];
+        } else {
+            $this->opciones_navegacion = $opciones_navegacion;
+        }
     }
     
     /**
@@ -83,7 +104,7 @@ class ModalResult {
                 padding: 15px 20px;
                 border-top: 1px solid #dee2e6;
                 display: flex;
-                justify-content: space-between;
+                justify-content: <?php echo count($this->opciones_navegacion) > 1 ? 'space-between' : 'center'; ?>;
                 border-bottom-left-radius: 8px;
                 border-bottom-right-radius: 8px;
             }
@@ -116,6 +137,7 @@ class ModalResult {
                 transition: background-color 0.2s, transform 0.1s;
                 border: none;
                 font-size: 14px;
+                margin: 0 5px;
             }
             
             .btn-modal:hover {
@@ -168,8 +190,9 @@ class ModalResult {
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <a href="employee_add.php" class="btn-modal btn-secondary">Agregar otro empleado</a>
-                    <a href="<?php echo $this->pagina_destino; ?>" class="btn-modal btn-primary">Ir a lista de empleados</a>
+                    <?php foreach($this->opciones_navegacion as $opcion): ?>
+                    <a href="<?php echo $opcion['url']; ?>" class="btn-modal <?php echo $opcion['clase']; ?>"><?php echo $opcion['texto']; ?></a>
+                    <?php endforeach; ?>
                 </div>
             </div>
         </div>
