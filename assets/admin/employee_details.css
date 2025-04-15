@@ -76,7 +76,6 @@
   font-weight: 500;
 }
 
-
 /* Campos de entrada */
 .form-group input,
 .form-group select {
@@ -86,6 +85,7 @@
   border-radius: 4px;
   font-size: 16px;
   transition: border-color 0.3s;
+  box-sizing: border-box; /* Asegura que el padding no aumente el tamaño total */
 }
 
 .form-group input:focus,
@@ -111,9 +111,65 @@
 }
 
 /* Ajusta los divs que contienen celular y teléfono para que estén pegados a sus prefijos */
-.form-row .form-group:has(#celular){
+.form-row .form-group:has(#celular),
+.form-row .form-group:has(#telefono){ /* Añadido #telefono */
   flex: 1;
   margin-left: 0;
+}
+
+/* Contenedor para el input de contraseña y el botón */
+.password-input-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+/* Usar el ID específico para el input de contraseña */
+.password-input-container #password-input { 
+  width: 95%;  
+  padding-right: 45px; /* Aumentar espacio para el botón/icono */
+}
+
+/* Botón para mostrar/ocultar contraseña */
+.toggle-password-btn {
+  position: absolute;
+  right: 1px; 
+  top: 1px;   
+  bottom: 1px;
+  width: 40px; /* Ajustar ancho si es necesario */
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-texto-secundario);
+  padding: 0; 
+}
+
+.toggle-password-btn:hover {
+  color: var(--color-boton);
+}
+
+/* Estilo para el icono Material Icons dentro del botón */
+.toggle-password-btn .material-icons {
+  font-size: 20px; /* Ajustar tamaño del icono si es necesario */
+  vertical-align: middle; /* Mejor alineación vertical */
+}
+
+/* Mensaje de validación de contraseña */
+.password-validation-message {
+  font-size: 0.85em;
+  margin-top: 5px;
+  min-height: 1.2em; /* Evita saltos de layout */
+}
+
+.password-validation-message.valid {
+  color: #2ecc71; /* Verde éxito */
+}
+
+.password-validation-message.invalid {
+  color: #e74c3c; /* Rojo peligro */
 }
 
 /* Grupo de botones */
