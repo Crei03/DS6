@@ -5,9 +5,9 @@
 
 // Configuración de la base de datos
 define('DB_HOST', 'localhost');
-define('DB_USER', 'root');
-define('DB_PASS', '');
-define('DB_NAME', 'DS6');
+define('DB_USER', 'test');
+define('DB_PASS', '123');
+define('DB_NAME', 'ds6');
 
 // Rutas de la aplicación
 define('BASE_URL', '/DS6/');
@@ -21,9 +21,6 @@ function conectarBD() {
     if ($conexion->connect_error) {
         die("Error de conexión a la base de datos: " . $conexion->connect_error);
     }
-    
-    // Establecer la codificación de caracteres
-    $conexion->set_charset("utf8");
     
     return $conexion;
 }

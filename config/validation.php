@@ -77,9 +77,6 @@ function validarLogin($cedula, $password) {
         $errores[] = "La cédula es obligatoria";
     } else {
         $cedulaLimpia = validarSoloNumeros($cedula);
-        if (strlen($cedulaLimpia) < 8 || strlen($cedulaLimpia) > 13) {
-            $errores[] = "El formato de la cédula es inválido";
-        }
     }
     
     // Validar contraseña
