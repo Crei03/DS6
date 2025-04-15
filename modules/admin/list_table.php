@@ -11,10 +11,44 @@ if (!$sesion->esAdmin()) {
     $sesion->redirigir('../../modules/auth/login.php');
 }
 
+// Procesar la inactivación del empleado si se recibe la solicitud
+if (isset($_GET['accion']) && $_GET['accion'] == 'inactivar' && isset($_GET['cedula'])) {
+    $cedula = $_GET['cedula'];
+    
+    // Conexión a la base de datos
+    $conn = conectarBD();
+    
+    // Actualizar estado del empleado a inactivo (0)
+    $update_query = "UPDATE empleados SET estado = 0 WHERE cedula = ?";
+    $stmt = $conn->prepare($update_query);
+    $stmt->bind_param("s", $cedula);
+    $stmt->execute();
+    
+    if ($stmt->affected_rows > 0) {
+        $mensaje = "Empleado inactivado correctamente";
+        $tipo = "success";
+    } else {
+        $mensaje = "Error al inactivar el empleado";
+        $tipo = "error";
+    }
+    
+    // Cerrar conexión
+    cerrarConexion($conn);
+    
+    // Redirigir para evitar reenvío de formulario
+    header("Location: list_table.php?mensaje=$mensaje&tipo=$tipo");
+    exit();
+}
+
 // Obtener listado de empleados
 $dbHandler = new DBHandler();
 $resultado = $dbHandler->selectAll('empleados');
-$empleados = ($resultado['status'] === 'ok') ? $resultado['data'] : [];
+$empleados_completos = ($resultado['status'] === 'ok') ? $resultado['data'] : [];
+
+// Filtrar solo empleados activos (estado = 1)
+$empleados = array_filter($empleados_completos, function($empleado) {
+    return $empleado['estado'] == 1;
+});
 
 // Crear instancia de Employee para obtener departamentos y cargos
 $employee = new Employee();
@@ -66,6 +100,53 @@ require_once '../../components/sidebar_menu.php';
     <link rel="stylesheet" href="../../assets/global/root.css">
     <link rel="stylesheet" href="../../assets/admin/list_table.css">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <style>
+        /* Estilo para mostrar estado activo */
+        .status-active {
+            background-color: #2ecc71;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.9em;
+            font-weight: bold;
+            display: inline-block;
+        }
+        
+        /* Estilos para los botones */
+        .inactive-button {
+            background-color: #f39c12;
+            color: white;
+            padding: 6px 10px;
+            border-radius: 4px;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            margin-right: 5px;
+            font-size: 14px;
+            transition: background-color 0.3s ease;
+        }
+        
+        .inactive-button:hover {
+            background-color: #e67e22;
+        }
+        
+        .delete-button {
+            background-color: #e74c3c;
+            color: white;
+            padding: 6px 10px;
+            border-radius: 4px;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            margin-right: 5px;
+            font-size: 14px;
+            transition: background-color 0.3s ease;
+        }
+        
+        .delete-button:hover {
+            background-color: #c0392b;
+        }
+    </style>
 </head>
 <body>
     <!-- Botón para mostrar/ocultar el sidebar en pantallas pequeñas -->
@@ -90,8 +171,17 @@ require_once '../../components/sidebar_menu.php';
                 <input type="text" class="search-input" id="searchInput" placeholder="Buscar por cédula, nombre o apellido...">
                 <button class="search-button"><span class="material-icons">search</span></button>
                 <a href="employee_add.php" class="add-button"><span class="material-icons">add</span> Agregar</a>
+                <a href="list_table_inactive.php" class="inactive-button"><span class="material-icons">block</span> Ver Inactivos</a>
+                <a href="list_table_delete.php" class="delete-button"><span class="material-icons">delete_sweep</span> Ver Eliminados</a>
             </div>
         </div>
+        
+        <?php 
+        // Mostrar mensaje de resultado si existe
+        if (isset($_GET['mensaje']) && isset($_GET['tipo'])) {
+            echo '<div class="alert alert-' . $_GET['tipo'] . '">' . $_GET['mensaje'] . '</div>';
+        }
+        ?>
         
         <table class="employee-table">
             <thead>
@@ -102,6 +192,7 @@ require_once '../../components/sidebar_menu.php';
                     <th>Cargo</th>
                     <th>Departamento</th>
                     <th>Nacionalidad</th>
+                    <th>Estado</th>
                     <th>Acciones</th>
                 </tr>
             </thead>
@@ -114,9 +205,16 @@ require_once '../../components/sidebar_menu.php';
                     <td><?php echo getCargoNombre($empleado['cargo'], $cargos); ?></td>
                     <td><?php echo getDepartamentoNombre($empleado['departamento'], $departamentos); ?></td>
                     <td><?php echo getNacionalidad($empleado['nacionalidad'],$nacionalidades); ?></td>
+                    <td><span class="status-active">Activo</span></td>
                     <td>
                         <a href="employee_details.php?id=<?php echo $empleado['cedula']; ?>" class="details-button">
                             <span class="material-icons">visibility</span> Ver
+                        </a>
+                        <a href="list_table.php?accion=inactivar&cedula=<?php echo $empleado['cedula']; ?>" class="inactive-button" onclick="return confirm('¿Estás seguro que deseas inactivar este empleado?');">
+                            <span class="material-icons">block</span> Inactivar
+                        </a>
+                        <a href="delete_employee.php?cedula=<?php echo $empleado['cedula']; ?>" class="delete-button" onclick="return confirm('¿Estás seguro que deseas eliminar este empleado?');">
+                            <span class="material-icons">delete</span> Eliminar
                         </a>
                     </td>
                 </tr>
