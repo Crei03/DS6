@@ -1,0 +1,324 @@
+/* Estilos para employee_add.php - basado en employee_details.css y adaptado para ser responsivo */
+
+/* Contenedor principal del formulario */
+.container {
+  display: flex;
+  width: 100%;
+}
+
+.main-content {
+  flex: 1;
+  margin-left: 250px;
+  padding: 20px;
+  transition: margin-left 0.3s ease;
+}
+
+.employee-card {
+  max-width: 1000px;
+  margin: 2rem auto;
+  padding: 2rem;
+  background-color: var(--color-contenedor);
+  border-radius: 8px;
+  box-shadow: var(--sombra-default);
+}
+
+/* Estilo para select inválidos */
+.invalid-select {
+  border: 2px solid red !important;
+  background-color: rgba(255, 0, 0, 0.05) !important;
+}
+
+/* Asegurar que el desplegable no tenga fondo rojo */
+.invalid-select option {
+  background-color: white !important;
+}
+
+/* Estilo para input inválidos */
+.invalid-input {
+  border: 2px solid red !important;
+  background-color: rgba(255, 0, 0, 0.05) !important;
+}
+
+/* Título principal */
+.employee-card h1 {
+  color: var(--color-titulo);
+  margin-bottom: 1.5rem;
+  font-size: 28px;
+}
+
+/* Secciones del formulario */
+.form-section {
+  margin-bottom: 2rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 1px solid var(--color-borde);
+}
+
+.form-section:last-child {
+  border-bottom: none;
+}
+
+.form-section h2 {
+  color: var(--color-titulo);
+  font-size: 20px;
+  margin-bottom: 1rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--color-borde);
+}
+
+/* Filas del formulario */
+.form-row {
+  display: flex;
+  flex-wrap: wrap;
+  margin-bottom: 1rem;
+  gap: 1rem;
+}
+
+/* Grupos de formulario */
+.form-group {
+  flex: 1 1 200px;
+  margin-bottom: 1rem;
+}
+
+.form-group.full-width {
+  flex: 1 1 100%;
+}
+
+/* Etiquetas de formulario */
+.form-group label {
+  display: block;
+  margin-bottom: 0.5rem;
+  color: var(--color-texto-secundario);
+  font-weight: 500;
+}
+
+/* Campos de entrada */
+.form-group input,
+.form-group select {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid var(--color-borde);
+  border-radius: 4px;
+  font-size: 16px;
+  transition: border-color 0.3s;
+  box-sizing: border-box; /* Asegura que el padding no aumente el tamaño total */
+}
+
+.form-group input:focus,
+.form-group select:focus {
+  border-color: var(--color-boton);
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
+}
+
+.form-group input:disabled {
+  background-color: #f4f4f4;
+  cursor: not-allowed;
+}
+
+/* Grupo de botones */
+.button-group {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+  margin-top: 2rem;
+}
+
+.button-group .btn {
+  padding: 12px 20px;
+  border: none;
+  border-radius: 4px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.button-group .btn {
+  background-color: var(--color-boton);
+  color: white;
+}
+
+.button-group .btn:hover {
+  background-color: var(--color-boton-hover);
+}
+
+.button-group .btn-secondary {
+  background-color: #95a5a6;
+}
+
+.button-group .btn-secondary:hover {
+  background-color: #7f8c8d;
+}
+
+.button-group .back-button,
+.back-button {
+  background-color: #6c7a89;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  font-size: 16px;
+  padding: 12px 20px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: background-color 0.3s;
+  text-decoration: none;
+  font-weight: 500;
+  box-shadow: var(--sombra-default);
+}
+
+.back-button:hover {
+  background-color: #4b5a6a;
+}
+
+.back-button .material-icons {
+  font-size: 20px;
+  margin-right: 5px;
+  vertical-align: middle;
+}
+
+/* Clases de utilidad */
+.text-center {
+  text-align: center;
+}
+
+/* Elementos de navegación responsiva */
+.sidebar-toggle {
+  display: none;
+  position: fixed;
+  top: 10px;
+  left: 10px;
+  z-index: 1100;
+  background-color: #3498db;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 8px;
+  cursor: pointer;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+.sidebar-toggle .material-icons {
+  font-size: 24px;
+}
+
+.sidebar-blur {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.4);
+  z-index: 900;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.sidebar-blur.active {
+  display: block;
+  opacity: 1;
+}
+
+/* Estilos responsivos */
+@media (max-width: 1200px) {
+  .employee-card {
+    max-width: 95%;
+  }
+}
+
+@media (max-width: 992px) {
+  .form-row {
+    gap: 0.5rem;
+  }
+  
+  .form-group {
+    flex: 1 1 180px;
+  }
+  
+  .employee-card {
+    padding: 1.5rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .main-content {
+    margin-left: 60px;
+    padding: 15px;
+  }
+  
+  .employee-card {
+    margin: 1rem auto;
+    padding: 1.2rem;
+  }
+  
+  .form-group {
+    flex: 1 1 100%;
+    margin-bottom: 0.8rem;
+  }
+  
+  .form-section h2 {
+    font-size: 18px;
+  }
+  
+  .employee-card h1 {
+    font-size: 24px;
+  }
+
+  .back-button {
+    padding: 10px 15px;
+    font-size: 14px;
+  }
+}
+
+@media (max-width: 600px) {
+  .button-group {
+    flex-direction: column;
+  }
+  
+  .button-group .btn {
+    width: 100%;
+    margin-bottom: 0.5rem;
+  }
+  
+  .form-row {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  
+  .form-group input,
+  .form-group select {
+    font-size: 14px;
+    padding: 8px;
+  }
+  
+  .form-group label {
+    font-size: 14px;
+  }
+}
+
+@media (max-width: 480px) {
+  .sidebar-toggle {
+    display: block;
+  }
+  
+  .main-content {
+    margin-left: 0;
+    padding: 10px;
+  }
+  
+  .employee-card {
+    margin: 0.5rem auto;
+    padding: 1rem;
+  }
+  
+  body .sidebar.active + .sidebar-blur + .container .main-content {
+    opacity: 0.7;
+    pointer-events: none;
+  }
+  
+  .form-section {
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+  }
+}

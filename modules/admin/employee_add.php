@@ -64,10 +64,10 @@ if (isset($_GET['ajax'])) {
 require_once '../../components/sidebar_menu.php';
 
 // Incluir los componentes necesarios
-require_once '../../components/employee_personal_info.php';
-require_once '../../components/employee_contact_info.php';
-require_once '../../components/employee_address_info.php';
-require_once '../../components/employee_work_info.php';
+require_once '../../components/employees/employee_personal_info.php';
+require_once '../../components/employees/employee_contact_info.php';
+require_once '../../components/employees/employee_address_info.php';
+require_once '../../components/employees/employee_work_info.php';
 
 /**
  * Clase para gestionar la adición de nuevos empleados
@@ -224,7 +224,7 @@ class EmployeeAdd {
      */
     public function renderForm() {
         // Inicializar los componentes con los datos del empleado (vacíos)
-        $personalInfo = new EmployeePersonalInfo($this->employeeData, $this);
+        $personalInfo = new EmployeePersonalInfo($this->employeeData, $this, false);
         $contactInfo = new EmployeeContactInfo($this->employeeData);
         $addressInfo = new EmployeeAddressInfo($this->employeeData, $this);
         $workInfo = new EmployeeWorkInfo($this->employeeData, $this);
@@ -239,6 +239,7 @@ class EmployeeAdd {
             <title>Agregar Empleado</title>
             <link rel="stylesheet" href="../../assets/global/root.css">
             <link rel="stylesheet" href="../../assets/admin/employee_details.css">
+            <link rel="stylesheet" href="../../assets/admin/employee_add.css">
             <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
         </head>
         <body>
@@ -259,6 +260,11 @@ class EmployeeAdd {
                 <main class="main-content">
                     <div class="card employee-card">
                         <h1 class="text-center">Agregar Nuevo Empleado</h1>
+                        <div style="display: flex; justify-content: flex-start; margin-bottom: 1.5rem;">
+                            <button type="button" class="back-button" id="btn-regresar" style="margin-right: 8px;">
+                                <span class="material-icons">arrow_back</span>Regresar
+                            </button>
+                        </div>
                         
                         <form id="employeeForm" method="POST" action="save_employee.php">
                             <?php 
@@ -427,10 +433,44 @@ class EmployeeAdd {
                         }
                     }
                 });
-            });
-            
-            // Script para cargar los distritos y corregimientos de forma dinámica
-            document.addEventListener('DOMContentLoaded', function() {
+                
+                // Botón Regresar: redirige a la página anterior si existe, si no usa history.back()
+                const btnRegresar = document.getElementById('btn-regresar');
+                if (btnRegresar) {
+                    btnRegresar.addEventListener('click', function() {
+                        if (document.referrer && document.referrer !== window.location.href) {
+                            window.location.href = document.referrer;
+                        } else {
+                            history.back();
+                        }
+                    });
+                }
+                
+                // Código para actualizar automáticamente el campo cédula
+                const prefijoInput = document.getElementById('prefijo');
+                const tomoInput = document.getElementById('tomo');
+                const asientoInput = document.getElementById('asiento');
+                const cedulaInput = document.getElementById('cedula');
+                
+                function actualizarCedula() {
+                    if (prefijoInput && tomoInput && asientoInput && cedulaInput) {
+                        const prefijo = prefijoInput.value.trim();
+                        const tomo = tomoInput.value.trim();
+                        const asiento = asientoInput.value.trim();
+                        
+                        // Solo actualizar si hay al menos uno de los campos
+                        if (prefijo || tomo || asiento) {
+                            cedulaInput.value = `${prefijo}-${tomo}-${asiento}`.replace(/--/g, '-');
+                        }
+                    }
+                }
+                
+                // Añadir eventos para actualización automática
+                if (prefijoInput) prefijoInput.addEventListener('input', actualizarCedula);
+                if (tomoInput) tomoInput.addEventListener('input', actualizarCedula);
+                if (asientoInput) asientoInput.addEventListener('input', actualizarCedula);
+                
+                // Script para cargar los distritos y corregimientos de forma dinámica
                 const provinciaSelect = document.getElementById('provincia');
                 const distritoSelect = document.getElementById('distrito');
                 const corregimientoSelect = document.getElementById('corregimiento');

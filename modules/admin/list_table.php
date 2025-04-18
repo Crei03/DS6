@@ -66,7 +66,6 @@ function getDepartamentoNombre($codigo, $departamentos) {
     return $codigo; // Si no encuentra, devuelve el código
 }
 
-
 // Función para obtener nombre del cargo
 function getCargoNombre($codigo, $cargos) {
     foreach ($cargos as $cargo) {
@@ -91,7 +90,7 @@ require_once '../../components/sidebar_menu.php';
 
 ?>
 
-<!DOCTYZPE html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
@@ -223,13 +222,13 @@ require_once '../../components/sidebar_menu.php';
         </table>
         
         <div class="pagination" id="paginationContainer">
-            <button class="pagination-button"><span class="material-icons">first_page</span></button>
-            <button class="pagination-button"><span class="material-icons">chevron_left</span></button>
-            <button class="pagination-button active">1</button>
-            <button class="pagination-button">2</button>
-            <button class="pagination-button">3</button>
-            <button class="pagination-button"><span class="material-icons">chevron_right</span></button>
-            <button class="pagination-button"><span class="material-icons">last_page</span></button>
+            <button class="pagination-button" id="firstPage"><span class="material-icons">first_page</span></button>
+            <button class="pagination-button" id="prevPage"><span class="material-icons">chevron_left</span></button>
+            <div id="pageNumbers" class="page-numbers">
+                <!-- Los números de página se generarán dinámicamente con JavaScript -->
+            </div>
+            <button class="pagination-button" id="nextPage"><span class="material-icons">chevron_right</span></button>
+            <button class="pagination-button" id="lastPage"><span class="material-icons">last_page</span></button>
         </div>
     </div>
 
@@ -265,44 +264,125 @@ require_once '../../components/sidebar_menu.php';
                 }
             });
 
-            // Funcionalidad de búsqueda
+            // Funcionalidad de búsqueda y paginación
             const searchInput = document.getElementById('searchInput');
             const employeeRows = document.querySelectorAll('.employee-row');
             const paginationContainer = document.getElementById('paginationContainer');
+            const pageNumbersContainer = document.getElementById('pageNumbers');
+            const rowsPerPage = 10; // Número de filas por página
+            let currentPage = 1; // Página inicial
+            let filteredRows = Array.from(employeeRows); // Inicialmente, todas las filas
+            
+            // Inicializar la paginación
+            initPagination();
             
             // Función para filtrar los empleados
             searchInput.addEventListener('input', function() {
                 const searchTerm = this.value.toLowerCase();
-                let visibleRowCount = 0;
                 
-                employeeRows.forEach(row => {
+                // Filtrar las filas según el término de búsqueda
+                filteredRows = Array.from(employeeRows).filter(row => {
                     const cedula = row.cells[0].textContent.toLowerCase();
                     const nombre = row.cells[1].textContent.toLowerCase();
                     const apellido = row.cells[2].textContent.toLowerCase();
                     
-                    if (cedula.includes(searchTerm) || nombre.includes(searchTerm) || apellido.includes(searchTerm)) {
-                        row.style.display = '';
-                        visibleRowCount++;
-                    } else {
-                        row.style.display = 'none';
+                    return cedula.includes(searchTerm) || nombre.includes(searchTerm) || apellido.includes(searchTerm);
+                });
+                
+                // Resetear a la primera página y actualizar la visualización
+                currentPage = 1;
+                updatePageNumbers();
+                displayRows();
+            });
+            
+            // Función para inicializar la paginación
+            function initPagination() {
+                // Configurar los botones de navegación
+                document.getElementById('firstPage').addEventListener('click', () => {
+                    currentPage = 1;
+                    updatePageNumbers();
+                    displayRows();
+                });
+                
+                document.getElementById('prevPage').addEventListener('click', () => {
+                    if (currentPage > 1) {
+                        currentPage--;
+                        updatePageNumbers();
+                        displayRows();
                     }
                 });
                 
-                // Mostrar u ocultar la paginación según la cantidad de registros visibles
-                togglePagination(visibleRowCount);
-            });
-            
-            // Función para mostrar u ocultar la paginación
-            function togglePagination(visibleRowCount) {
-                if (visibleRowCount >= 10) {
-                    paginationContainer.style.display = '';
-                } else {
-                    paginationContainer.style.display = 'none';
-                }
+                document.getElementById('nextPage').addEventListener('click', () => {
+                    const totalPages = Math.ceil(filteredRows.length / rowsPerPage);
+                    if (currentPage < totalPages) {
+                        currentPage++;
+                        updatePageNumbers();
+                        displayRows();
+                    }
+                });
+                
+                document.getElementById('lastPage').addEventListener('click', () => {
+                    currentPage = Math.ceil(filteredRows.length / rowsPerPage);
+                    updatePageNumbers();
+                    displayRows();
+                });
+                
+                // Generar números de página y mostrar las filas
+                updatePageNumbers();
+                displayRows();
             }
             
-            // Inicializar el estado de la paginación al cargar la página
-            togglePagination(employeeRows.length);
+            // Función para actualizar los números de página
+            function updatePageNumbers() {
+                pageNumbersContainer.innerHTML = '';
+                const totalPages = Math.max(1, Math.ceil(filteredRows.length / rowsPerPage));
+                
+                // Determinar qué números de página mostrar
+                let startPage = Math.max(1, currentPage - 2);
+                const endPage = Math.min(totalPages, startPage + 4);
+                startPage = Math.max(1, endPage - 4);
+                
+                // Crear botones para cada número de página
+                for (let i = startPage; i <= endPage; i++) {
+                    const pageButton = document.createElement('button');
+                    pageButton.className = 'pagination-button' + (i === currentPage ? ' active' : '');
+                    pageButton.textContent = i;
+                    pageButton.addEventListener('click', function() {
+                        currentPage = i;
+                        updatePageNumbers();
+                        displayRows();
+                    });
+                    pageNumbersContainer.appendChild(pageButton);
+                }
+                
+                // Mostrar u ocultar la paginación según la cantidad de registros
+                togglePagination(filteredRows.length);
+            }
+            
+            // Función para mostrar las filas según la página actual
+            function displayRows() {
+                const startIndex = (currentPage - 1) * rowsPerPage;
+                const endIndex = startIndex + rowsPerPage;
+                
+                // Ocultar todas las filas primero
+                employeeRows.forEach(row => {
+                    row.style.display = 'none';
+                });
+                
+                // Mostrar solo las filas de la página actual
+                filteredRows.slice(startIndex, endIndex).forEach(row => {
+                    row.style.display = '';
+                });
+            }
+            
+            // Función para mostrar u ocultar la paginación
+            function togglePagination(totalRows) {
+                if (totalRows > rowsPerPage) {
+                    paginationContainer.style.display = '';
+                } else {
+                    paginationContainer.style.display = totalRows === 0 ? 'none' : '';
+                }
+            }
         });
     </script>
 </body>

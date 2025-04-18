@@ -24,6 +24,10 @@ require_once '../../components/sidebar_menu.php';
     <title>FormAntro - Dashboard</title>
     <link rel="stylesheet" href="../../assets/global/root.css">
     <link rel="stylesheet" href="../../assets/admin/dashboard.css">
+    <link rel="stylesheet" href="../../assets/components/dashboard_metrics.css">
+    <link rel="stylesheet" href="../../assets/components/dashboard_recent_employees.css">
+    <link rel="stylesheet" href="../../assets/components/dashboard_quick_actions.css">
+    <link rel="stylesheet" href="../../assets/components/dashboard_department_chart.css">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 </head>
 <body>
@@ -45,38 +49,10 @@ require_once '../../components/sidebar_menu.php';
             <div class="dashboard-title">Panel de Control</div>
             <div class="dashboard-subtitle">Bienvenido al sistema de gestión de empleados</div>
         </div>
-        
-        <div class="dashboard-cards">
-            <div class="card">
-                <div class="card-title">Total de Empleados</div>
-                <div class="card-value">
-                    <?php
-                    // En un sistema real, esto vendría de la base de datos
-                    echo '42';
-                    ?>
-                </div>
-            </div>
-            
-            <div class="card">
-                <div class="card-title">Departamentos</div>
-                <div class="card-value">
-                    <?php
-                    // En un sistema real, esto vendría de la base de datos
-                    echo '8';
-                    ?>
-                </div>
-            </div>
-            
-            <div class="card">
-                <div class="card-title">Nuevos este mes</div>
-                <div class="card-value">
-                    <?php
-                    // En un sistema real, esto vendría de la base de datos
-                    echo '5';
-                    ?>
-                </div>
-            </div>
-        </div>
+        <?php include '../../components/admin/dashboard_quick_actions.php'; ?>
+        <?php include '../../components/admin/dashboard_metrics.php'; ?>
+        <?php include '../../components/admin/dashboard_recent_employees.php'; ?>
+        <?php include '../../components/admin/dashboard_department_chart.php'; ?>
     </div>
 
     <script>

@@ -53,10 +53,10 @@ if (!$sesion->esAdmin()) {
 require_once '../../components/sidebar_menu.php';
 
 // Incluir los componentes necesarios
-require_once '../../components/employee_personal_info.php';
-require_once '../../components/employee_contact_info.php';
-require_once '../../components/employee_address_info.php';
-require_once '../../components/employee_work_info.php';
+require_once '../../components/employees/employee_personal_info.php';
+require_once '../../components/employees/employee_contact_info.php';
+require_once '../../components/employees/employee_address_info.php';
+require_once '../../components/employees/employee_work_info.php';
 
 /**
  * Clase para gestionar los detalles de empleados

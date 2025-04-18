@@ -34,7 +34,7 @@ class EmployeeContactInfo {
                 </div>
                 <div class="form-group">
                     <label for="celular">Celular:</label>
-                    <input id="celular" name="celular" value="<?php echo $this->employeeData['celular']; ?>" oninput="this.value = validarSoloNumeros(this.value)" required>
+                    <input id="celular" name="celular" value="<?php echo $this->employeeData['celular']; ?>" maxlength="8" oninput="this.value = validarSoloNumeros(this.value)" required>
                 </div>
                 
             </div>
@@ -46,7 +46,7 @@ class EmployeeContactInfo {
                 </div>
                 <div class="form-group">
                     <label for="telefono">Telefono:</label>
-                    <input id="telefono" name="telefono" value="<?php echo $this->employeeData['telefono']; ?>" oninput="this.value = validarSoloNumeros(this.value)" required>
+                    <input id="telefono" name="telefono" value="<?php echo $this->employeeData['telefono']; ?>" maxlength="7" oninput="this.value = validarSoloNumeros(this.value)" required>
                 </div>
                 
             </div>

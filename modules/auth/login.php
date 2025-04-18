@@ -67,7 +67,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 if ($password === $empleado['contraseña']) {
                     // Iniciar sesión como empleado usando la clase Session
                     $sesion->iniciarSesion('empleado', $empleado['cedula']);
-                    $sesion->redirigir('../../modules/employees/my_profile.php');
+                    $sesion->redirigir('../../modules/employees/dashboard.php');
                     $encontrado = true;
                 } else {
                     $errores[] = "La contraseña es incorrecta";

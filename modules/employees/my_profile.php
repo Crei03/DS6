@@ -20,10 +20,10 @@ if (!$sesion->esEmpleado()) {
 
 // Incluir los componentes necesarios
 require_once '../../components/profile_actions.php';
-require_once '../../components/employee_personal_info.php';
-require_once '../../components/employee_contact_info.php';
-require_once '../../components/employee_address_info.php';
-require_once '../../components/employee_work_info.php';
+require_once '../../components/employees/employee_personal_info.php';
+require_once '../../components/employees/employee_contact_info.php';
+require_once '../../components/employees/employee_address_info.php';
+require_once '../../components/employees/employee_work_info.php';
 require_once '../../components/sidebar_menu.php';
 
 /**
@@ -200,7 +200,7 @@ class MyProfile {
      */
     public function render() {
         $profileActions = new ProfileActions($this->employee->getData(), $this->activeTab);
-        $personalInfo = new EmployeePersonalInfo($this->employee->getData(), $this);
+        $personalInfo = new EmployeePersonalInfo($this->employee->getData(), $this, true); // Pasar true para deshabilitar los campos de cédula
         $contactInfo = new EmployeeContactInfo($this->employee->getData());
         $addressInfo = new EmployeeAddressInfo($this->employee->getData(), $this);
         $workInfo = new EmployeeWorkInfo($this->employee->getData(), $this);

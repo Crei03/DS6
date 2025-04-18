@@ -80,14 +80,6 @@ function renderSidebar($activeMenu = '') {
             id: 'empleados'
         );
 
-        // // opcion para ver empleados inactivos
-        // $menuOptions[] = new menuOption( 
-        //     icon: 'people_off',
-        //     text: 'Empleados Eliminados',
-        //     link: '../admin/list_table_inactive.php',
-        //     id: 'empleados_eliminados'
-        // );
-
         $menuOptions[] = new menuOption( 
             icon: 'add',
             text: 'Agregar Empleado',
@@ -95,20 +87,22 @@ function renderSidebar($activeMenu = '') {
             id: 'employee_add'      
         );
         
-        $menuOptions[] = new menuOption( 
-            icon: 'settings',
-            text: 'Configuración',
-            link: '../admin/config.php',
-            id: 'config'
-        );
     } elseif ($sesion->esEmpleado()) {
         // Opciones para empleados
+        $menuOptions[] = new menuOption(
+            icon: 'dashboard',
+            text: 'Dashboard',
+            link: '../employees/dashboard.php',
+            id: 'dashboard'
+        );
+        
         $menuOptions[] = new menuOption( 
             icon: 'person',
             text: 'Mi Perfil',
             link: '../employees/my_profile.php',
             id: 'my_profile'
         );
+
         
         // Otras opciones específicas para empleados si son necesarias
     }

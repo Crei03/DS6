@@ -150,6 +150,52 @@ body {
     opacity: 0.7;
 }
 
+/* Estilos para el campo de contraseña y el botón de visibilidad */
+.password-input-container {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.password-input-container input {
+    padding-right: 40px; /* Espacio para el botón */
+    width: 100%;
+}
+
+.toggle-password-btn {
+    position: absolute;
+    right: 5px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--color-texto-secundario);
+    padding: 5px;
+}
+
+.toggle-password-btn:hover {
+    color: var(--color-boton);
+}
+
+/* Estilos para los mensajes de validación de contraseña */
+.password-validation-message {
+    margin-top: 5px;
+    font-size: 0.85rem;
+}
+
+.password-validation-message.valid {
+    color: green;
+}
+
+.password-validation-message.invalid {
+    color: red;
+    font-weight: 400;
+}
+
 /* Ajustes responsivos */
 @media (max-width: 1200px) {
     .profile-sidebar-container {

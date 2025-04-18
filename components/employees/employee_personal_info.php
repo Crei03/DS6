@@ -4,17 +4,20 @@
  * 
  * @param array $employeeData Datos del empleado
  * @param object $parent Referencia a la clase padre para acceder a los métodos
+ * @param bool $disableCedulaFields Indica si los campos de cédula (prefijo, tomo, asiento) deben estar deshabilitados
  */
 class EmployeePersonalInfo {
     private $employeeData;
     private $parent;
+    private $disableCedulaFields;
     
     /**
      * Constructor de la clase
      */
-    public function __construct($employeeData, $parent) {
+    public function __construct($employeeData, $parent, $disableCedulaFields = false) {
         $this->employeeData = $employeeData;
         $this->parent = $parent;
+        $this->disableCedulaFields = $disableCedulaFields;
     }
     
     /**
@@ -30,6 +33,9 @@ class EmployeePersonalInfo {
                 $this->employeeData['asiento'] ?? ''
             );
         }
+
+        // Determinar si los campos deben estar deshabilitados
+        $disabledAttr = $this->disableCedulaFields ? 'disabled' : '';
         ?>
         <div class="form-section">
             <h2>Información Personal</h2>
@@ -43,17 +49,20 @@ class EmployeePersonalInfo {
                 
                 <div class="form-group">
                     <label for="prefijo">Prefijo:</label>
-                    <input type="text" id="prefijo" name="prefijo" value="<?php echo $this->employeeData['prefijo']; ?>" maxlength="2" oninput="validarPrefijo(this)" required>
+                    <input type="text" id="prefijo" value="<?php echo $this->employeeData['prefijo']; ?>" maxlength="2" oninput="validarPrefijo(this)" <?php echo $disabledAttr; ?>>
+                    <input type="hidden" id="prefijo_hidden" name="prefijo" value="<?php echo $this->employeeData['prefijo']; ?>">
                 </div>
                 
                 <div class="form-group">
                     <label for="tomo">Tomo:</label>
-                    <input type="text" id="tomo" name="tomo" value="<?php echo $this->employeeData['tomo']; ?>" maxlength="4" oninput="this.value = validarSoloNumeros(this.value); updateCedula();" required>
+                    <input type="text" id="tomo" value="<?php echo $this->employeeData['tomo']; ?>" maxlength="4" oninput="this.value = validarSoloNumeros(this.value); updateCedula();" <?php echo $disabledAttr; ?>>
+                    <input type="hidden" id="tomo_hidden" name="tomo" value="<?php echo $this->employeeData['tomo']; ?>">
                 </div>
                 
                 <div class="form-group">
                     <label for="asiento">Asiento:</label>
-                    <input type="text" id="asiento" name="asiento" value="<?php echo $this->employeeData['asiento']; ?>" maxlength="5" oninput="this.value = validarSoloNumeros(this.value); updateCedula();" required>
+                    <input type="text" id="asiento" value="<?php echo $this->employeeData['asiento']; ?>" maxlength="5" oninput="this.value = validarSoloNumeros(this.value); updateCedula();" <?php echo $disabledAttr; ?>>
+                    <input type="hidden" id="asiento_hidden" name="asiento" value="<?php echo $this->employeeData['asiento']; ?>">
                 </div>
             </div>
             
@@ -172,6 +181,14 @@ class EmployeePersonalInfo {
                 
                 input.value = value;
                 updateCedula();
+            }
+
+            function validarSoloLetras(value) {
+                return value.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑ\s]/g, '');
+            }
+
+            function validarSoloNumeros(value) {
+                return value.replace(/[^0-9]/g, '');
             }
 
             function updateCedula() {

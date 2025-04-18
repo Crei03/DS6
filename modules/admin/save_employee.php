@@ -99,44 +99,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     
     // Verificar si ya existe el empleado (solo para inserción)
     if ($id_valido && $modo === 'insertar') {
-        // Construir condición de búsqueda basada en identificación
-        if ($prefijo) {
-            // Para identificación por tomo/asiento
-            $existeEmpleado = $dbHandler->selectOne('empleados', 'prefijo', $prefijo);
-            
-            // Si no encontró por prefijo, verificamos que la combinación tomo/asiento sea única
-            if ($existeEmpleado['status'] !== 'ok') {
-                $query = "SELECT * FROM empleados WHERE tomo = ? AND asiento = ?";
-                try {
-                    // Usar la función conectarBD() de config.php para obtener conexión directa
-                    $conexion = conectarBD();
-                    $stmt = $conexion->prepare($query);
-                    $stmt->bind_param("ss", $tomo, $asiento);
-                    $stmt->execute();
-                    $result = $stmt->get_result();
-                    if ($result->num_rows > 0) {
-                        $id_valido = false;
-                        $mensaje = "Ya existe un empleado con ese tomo y asiento en el sistema.";
-                        $tipo_mensaje = "error";
-                    }
-                    $stmt->close();
-                    $conexion->close();
-                } catch (Exception $e) {
-                    error_log("Error verificando tomo/asiento: " . $e->getMessage());
-                }
-            } else {
-                $id_valido = false;
-                $mensaje = "Ya existe un empleado con ese prefijo en el sistema.";
-                $tipo_mensaje = "error";
-            }
-        } else {
-            // Para identificación por cédula
-            $existeEmpleado = $dbHandler->selectOne('empleados', 'cedula', $cedula);
-            if ($existeEmpleado['status'] === 'ok') {
-                $id_valido = false;
-                $mensaje = "Ya existe un empleado con esa cédula en el sistema.";
-                $tipo_mensaje = "error";
-            }
+        // Para identificación por cédula
+        $existeEmpleado = $dbHandler->selectOne('empleados', 'cedula', $cedula);
+        if ($existeEmpleado['status'] === 'ok') {
+            $id_valido = false;
+            $mensaje = "Ya existe un empleado con esa cédula en el sistema.";
+            $tipo_mensaje = "error";
         }
     }
     

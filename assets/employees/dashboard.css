@@ -1,0 +1,131 @@
+/* Estilo para la bienvenida y estructura del dashboard del empleado */
+.dashboard-header {
+  background: var(--color-contenedor);
+  border-radius: 8px;
+  box-shadow: var(--sombra-default);
+  padding: 28px 32px 18px 32px;
+  margin-bottom: 28px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  animation: fadeInDown 0.7s cubic-bezier(.4,0,.2,1);
+}
+.dashboard-title {
+  color: var(--color-titulo);
+  font-size: 2rem;
+  font-weight: bold;
+  margin-bottom: 2px;
+  letter-spacing: 0.5px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.dashboard-title .material-icons {
+  font-size: 2.2rem;
+  color: var(--color-boton);
+  vertical-align: middle;
+}
+.dashboard-subtitle {
+  color: var(--color-texto-secundario);
+  font-size: 1.1rem;
+  font-weight: 500;
+  margin-bottom: 0;
+  margin-top: 2px;
+}
+@media (max-width: 900px) {
+  .dashboard-header {
+    padding: 18px 12px 10px 12px;
+    margin-bottom: 18px;
+  }
+  .dashboard-title {
+    font-size: 1.4rem;
+  }
+  .dashboard-title .material-icons {
+    font-size: 1.7rem;
+  }
+  .dashboard-subtitle {
+    font-size: 1rem;
+  }
+}
+@media (max-width: 600px) {
+  .dashboard-header {
+    padding: 12px 6px 8px 6px;
+    margin-bottom: 12px;
+  }
+  .dashboard-title {
+    font-size: 1.1rem;
+    gap: 4px;
+  }
+  .dashboard-title .material-icons {
+    font-size: 1.2rem;
+  }
+  .dashboard-subtitle {
+    font-size: 0.95rem;
+  }
+}
+@keyframes fadeInDown {
+  from { opacity: 0; transform: translateY(-20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Utilidad para el main-content del dashboard */
+.main-content {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 24px 12px 32px 12px;
+  margin-left: 250px; /* Ancho del sidebar */
+  transition: margin-left 0.3s ease;
+}
+
+.profile-summary-attendance-row {
+  display: flex;
+  gap: 32px;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  justify-content: space-between;
+}
+
+.profile-summary-attendance-row .employee-profile-summary.card,
+.profile-summary-attendance-row .employee-attendance-chart.card {
+  flex: 1;
+  min-width: 260px;
+}
+
+@media (max-width: 900px) {
+  .profile-summary-attendance-row {
+    flex-direction: column;
+    gap: 20px;
+  }
+  
+  .profile-summary-attendance-row .employee-profile-summary.card,
+  .profile-summary-attendance-row .employee-attendance-chart.card {
+    width: 100%;
+  }
+}
+
+@media (max-width: 768px) {
+  .main-content {
+    margin-left: 60px; /* Ancho del sidebar colapsado */
+  }
+}
+
+@media (max-width: 600px) {
+  .main-content {
+    padding: 10px 2px 18px 2px;
+  }
+}
+
+@media (max-width: 480px) {
+  .main-content {
+    margin-left: 0; /* Sin margen cuando el sidebar está oculto */
+    padding: 10px 8px 18px 8px;
+  }
+  
+  /* Cuando el sidebar está activo en móviles, ajustar margen */
+  body .sidebar.active + .sidebar-blur + .main-content {
+    margin-left: 0;
+    opacity: 0.5;
+    pointer-events: none;
+  }
+}

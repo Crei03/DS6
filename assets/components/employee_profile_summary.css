@@ -1,0 +1,32 @@
+/* Estilos para employee_profile_summary.php */
+.employee-profile-summary.card {
+  margin-bottom: 24px;
+  padding: 20px 28px;
+  background: var(--color-contenedor);
+  border-radius: 8px;
+  box-shadow: var(--sombra-default);
+  max-width: 420px;
+}
+.profile-row {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 10px;
+  font-size: 16px;
+}
+.profile-label {
+  color: var(--color-texto-secundario);
+  font-weight: 600;
+  margin-right: 8px;
+}
+@media (max-width: 600px) {
+  .employee-profile-summary.card {
+    padding: 12px 8px;
+    font-size: 14px;
+    max-width: 100%;
+  }
+  .profile-row {
+    font-size: 14px;
+    flex-direction: column;
+    gap: 2px;
+  }
+}
