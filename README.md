@@ -29,30 +29,6 @@ DS6/
 └── bd.sql            # Estructura de la base de datos
 ```
 
-## Requisitos del Sistema
-
-- PHP 7.4 o superior
-- MySQL 5.7 o superior
-- Servidor web (Apache, Nginx)
-- XAMPP (para desarrollo local)
-
-## Base de Datos
-
-El sistema utiliza una base de datos relacional con las siguientes tablas principales:
-
-- **empleados**: Almacena la información completa de cada empleado
-- **usuarios**: Gestiona las credenciales y permisos de acceso
-- **departamento**: Catálogo de departamentos de la empresa
-- **cargo**: Posiciones disponibles dentro de la empresa
-- **provincia/distrito/corregimiento**: Información de ubicación geográfica
-
-## Instalación y Configuración
-
-1. Clone el repositorio en su directorio web local (ej. `c:\xampp\htdocs\`)
-2. Importe el archivo `bd.sql` en su servidor MySQL para crear la estructura de la base de datos
-3. Configure los parámetros de conexión en el archivo de configuración
-4. Acceda a la aplicación a través de su navegador web (ej. `http://localhost/DS6/`)
-
 ## Roles y Permisos
 
 El sistema cuenta con dos tipos de usuarios:
@@ -85,17 +61,26 @@ El sistema cuenta con dos tipos de usuarios:
    - **Editar**: Seleccionar un empleado y modificar sus datos
    - **Eliminar**: Seleccionar un empleado y confirmar su eliminación
 
-## En Desarrollo
-
-- Módulo de reportes y estadísticas
-- Exportación de datos en diferentes formatos
-- Panel de control con métricas clave
-- Sistema de notificaciones
-
-## Contacto y Soporte
-
-Para reportar problemas o solicitar asistencia, contacte al equipo de desarrollo.
-
 ---
 
-© 2023 FormoAntro. Todos los derechos reservados.
+## Capturas de Pantalla
+
+A continuación se muestran algunas capturas de pantalla del sistema:
+
+### Dashboard Principal del Administrador
+
+![Dashboard](./public/FormAntro-Dashboard.png)
+
+### Listado de Empleados
+
+![Listado de Empleados](./public/FormAntro-Listado-de-Empleados.png)
+
+### Empleados Inactivos
+
+![Empleados Inactivos](./public/FormAntro-Empleados-Inactivos.png)
+
+### Empleados Eliminados
+
+![Empleados Eliminados](./public/FormAntro-Empleados-Eliminados.png)
+
+---

@@ -79,7 +79,7 @@ class EmployeeDetails {
             exit;
         }
     }
-    
+
     /**
      * Obtener las opciones de distritos para la provincia seleccionada
      */
@@ -208,7 +208,7 @@ class EmployeeDetails {
             <meta name="viewport" content="width=device-width, initial-scale=1.0">
             <title>Detalles del Empleado</title>
             <link rel="stylesheet" href="../../assets/global/root.css">
-            <link rel="stylesheet" href="../../assets/admin/employee_details.css">
+            <link rel="stylesheet" href="../../assets/admin/employee_add.css">
             <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
         </head>
         <body>
@@ -226,161 +226,116 @@ class EmployeeDetails {
                 <main class="main-content">
                     <div class="card employee-card">
                         <h1 class="text-center">Detalles del Empleado</h1>
-                        
-                        <form id="employeeForm" method="POST" action="update_employee.php">
-                            <input type="hidden" name="employee_id" value="<?php echo $this->employeeId; ?>">
-                            
+                        <div style="display: flex; justify-content: flex-start; margin-bottom: 1.5rem;">
+                            <button type="button" class="back-button" id="btn-regresar" style="margin-right: 8px;" onclick="window.history.length > 1 ? window.history.back() : window.location.href='list_table.php';">
+                                <span class="material-icons">arrow_back</span>Regresar
+                            </button>
+                        </div>
+                        <div id="alert-container"></div>
+                        <form id="employeeForm">
+                            <input type="hidden" name="cedula" id="cedula_hidden" value="<?php echo htmlspecialchars($this->employee->get('cedula')); ?>">
                             <?php 
                             $personalInfo->render();
                             $contactInfo->render();
                             $addressInfo->render();
                             $workInfo->render();
                             ?>
-                            
                             <div class="button-group">
                                 <button type="submit" class="btn">Guardar</button>
                                 <button type="button" class="btn btn-secondary" onclick="history.back()">Cancelar</button>
                             </div>
                         </form>
+                        <script type="module">
+                        import { validarCedulaPanama, validarPrefijo } from '../../config/validation.js';
+                        document.addEventListener('DOMContentLoaded', async () => {
+                            const form = document.getElementById('employeeForm');
+                            const cedulaHidden = document.getElementById('cedula_hidden');
+                            const prefijo = document.getElementById('prefijo');
+                            const tomo  = document.getElementById('tomo');
+                            const asiento = document.getElementById('asiento');
+                            const provinciaSelect = document.getElementById('provincia');
+                            const distritoSelect = document.getElementById('distrito');
+                            const corregimientoSelect = document.getElementById('corregimiento');
+                            const departamentoSelect = document.getElementById('departamento');
+                            const cargoSelect = document.getElementById('cargo');
+                            const errorDiv = document.getElementById('alert-container');
+
+                            // Validación de cédula (si el campo existe y es editable)
+                            const cedulaInput = document.getElementById('cedula');
+                            if (cedulaInput) {
+                                cedulaInput.addEventListener('input', () => validarCedulaPanama(cedulaInput));
+                            }
+                            // Validación de prefijo (si el campo existe y es editable)
+                            if (prefijo) {
+                                prefijo.addEventListener('input', () => validarPrefijo(prefijo));
+                            }
+
+                            // Selects dependientes (AJAX)
+                            function fetchAndPopulate(targetSelect, ajaxAction, paramName, paramValue, defaultOptionText) {
+                                targetSelect.innerHTML = '<option value="">Cargando...</option>';
+                                if (!paramValue) {
+                                    targetSelect.innerHTML = `<option value="">${defaultOptionText}</option>`;
+                                    if (targetSelect === distritoSelect) {
+                                        corregimientoSelect.innerHTML = '<option value="">Seleccione un corregimiento</option>';
+                                    }
+                                    return;
+                                }
+                                fetch(`employee_details.php?id=${cedulaHidden.value}&ajax=${ajaxAction}&${paramName}=${paramValue}`)
+                                    .then(response => response.json())
+                                    .then(data => {
+                                        if (data.status === 'ok') {
+                                            targetSelect.innerHTML = `<option value="">${defaultOptionText}</option>`;
+                                            data.data.forEach(option => {
+                                                let value = option.codigo_distrito || option.codigo_corregimiento || option.codigo || option.value;
+                                                let text = option.nombre_distrito || option.nombre_corregimiento || option.nombre || option.text;
+                                                targetSelect.innerHTML += `<option value="${value}">${text}</option>`;
+                                            });
+                                        } else {
+                                            targetSelect.innerHTML = '<option value="">Error al cargar</option>';
+                                        }
+                                    })
+                                    .catch(() => {
+                                        targetSelect.innerHTML = '<option value="">Error de red</option>';
+                                    });
+                            }
+                            provinciaSelect.addEventListener('change', function() {
+                                fetchAndPopulate(distritoSelect, 'get_distritos', 'provincia_id', this.value, 'Seleccione un distrito');
+                                corregimientoSelect.innerHTML = '<option value="">Seleccione un corregimiento</option>';
+                            });
+                            distritoSelect.addEventListener('change', function() {
+                                fetchAndPopulate(corregimientoSelect, 'get_corregimientos', 'distrito_id', this.value, 'Seleccione un corregimiento');
+                            });
+                            departamentoSelect.addEventListener('change', function() {
+                                fetchAndPopulate(cargoSelect, 'get_cargos', 'departamento_id', this.value, 'Seleccione un cargo');
+                            });
+
+                            // Envío del formulario por fetch
+                            form.addEventListener('submit', async e => {
+                                e.preventDefault();
+                                errorDiv.innerHTML = '';
+                                const formData = new FormData(form);
+                                const data = {};
+                                formData.forEach((v,k)=> data[k]=v);
+                                if (!data.cedula) {
+                                    errorDiv.textContent = 'Cédula inválida'; return;
+                                }
+                                const resp = await fetch('../../config/controlador.php', {
+                                    method:'POST', headers:{'Content-Type':'application/json'},
+                                    body: JSON.stringify({ action:'update', table:'empleados', id:data.cedula, data })
+                                });
+                                const result = await resp.json();
+                                if (result.status==='ok' || result.updated) {
+                                    errorDiv.innerHTML = '<div style="color:green">Actualizado correctamente</div>';
+                                    setTimeout(()=>window.location.href='list_table.php', 1200);
+                                } else {
+                                    errorDiv.textContent = result.message || 'Error al actualizar';
+                                }
+                            });
+                        });
+                        </script>
                     </div>
                 </main>
             </div>
-            
-            <script>
-            document.addEventListener('DOMContentLoaded', function() {
-                // Selectores de elementos
-                const provinciaSelect = document.getElementById('provincia');
-                const distritoSelect = document.getElementById('distrito');
-                const corregimientoSelect = document.getElementById('corregimiento');
-                const departamentoSelect = document.getElementById('departamento');
-                const cargoSelect = document.getElementById('cargo');
-                const employeeId = document.querySelector('input[name="employee_id"]').value;
-                const sidebarToggle = document.getElementById('sidebar-toggle');
-                const sidebar = document.querySelector('.sidebar');
-                const sidebarBlur = document.getElementById('sidebar-blur');
-
-                /**
-                 * Popula un elemento select con opciones.
-                 * Detecta automáticamente los campos de valor y texto.
-                 */
-                function populateSelect(selectElement, options, defaultOptionText) {
-                    selectElement.innerHTML = `<option value="">${defaultOptionText}</option>`;
-                    
-                    if (!options || options.length === 0) {
-                        selectElement.innerHTML = `<option value="">${defaultOptionText.replace('Seleccione', 'No hay')}</option>`;
-                        return;
-                    }
-                    
-                    const firstOption = options[0];
-                    let valueField, textField;
-                    
-                    if (firstOption.codigo_distrito !== undefined) {
-                        valueField = 'codigo_distrito'; textField = 'nombre_distrito';
-                    } else if (firstOption.codigo_corregimiento !== undefined) {
-                        valueField = 'codigo_corregimiento'; textField = 'nombre_corregimiento';
-                    } else if (firstOption.codigo !== undefined) {
-                        valueField = 'codigo'; textField = 'nombre';
-                    } else {
-                        // Fallback genérico (aunque no se usa en los casos actuales de fetch)
-                        valueField = Object.keys(firstOption).find(key => key.includes('id') || key.includes('codigo')) || 'value';
-                        textField = Object.keys(firstOption).find(key => key.includes('nombre') || key.includes('text')) || 'text';
-                    }
-                    
-                    options.forEach(option => {
-                        const value = option[valueField];
-                        const text = option[textField];
-                        const optionElement = document.createElement('option');
-                        optionElement.value = value;
-                        optionElement.textContent = text;
-                        selectElement.appendChild(optionElement);
-                    });
-                }
-
-                /**
-                 * Realiza una llamada fetch para obtener datos y poblar un select.
-                 */
-                function fetchAndPopulate(targetSelect, ajaxAction, paramName, paramValue, defaultOptionText) {
-                    targetSelect.innerHTML = '<option value="">Cargando...</option>';
-
-                    if (!paramValue) {
-                        targetSelect.innerHTML = `<option value="">${defaultOptionText}</option>`;
-                        // Si es el select de distrito, también limpiar corregimiento
-                        if (targetSelect === distritoSelect) {
-                            corregimientoSelect.innerHTML = '<option value="">Seleccione un corregimiento</option>';
-                        }
-                        return;
-                    }
-
-                    fetch(`employee_details.php?id=${employeeId}&ajax=${ajaxAction}&${paramName}=${paramValue}`)
-                        .then(response => {
-                            if (!response.ok) throw new Error(`Error HTTP: ${response.status}`);
-                            return response.json();
-                        })
-                        .then(data => {
-                            if (data.status === 'ok') {
-                                populateSelect(targetSelect, data.data, defaultOptionText);
-                            } else {
-                                targetSelect.innerHTML = '<option value="">Error al cargar</option>';
-                                console.error('Error en la respuesta AJAX:', data.message);
-                            }
-                        })
-                        .catch(error => {
-                            targetSelect.innerHTML = '<option value="">Error de red</option>';
-                            console.error('Error en fetch:', error);
-                        });
-                }
-
-                // --- Event Listeners para selects dependientes ---
-
-                provinciaSelect.addEventListener('change', function() {
-                    fetchAndPopulate(distritoSelect, 'get_distritos', 'provincia_id', this.value, 'Seleccione un distrito');
-                    // Limpiar corregimiento al cambiar provincia
-                    corregimientoSelect.innerHTML = '<option value="">Seleccione un corregimiento</option>';
-                });
-
-                distritoSelect.addEventListener('change', function() {
-                    fetchAndPopulate(corregimientoSelect, 'get_corregimientos', 'distrito_id', this.value, 'Seleccione un corregimiento');
-                });
-                
-                departamentoSelect.addEventListener('change', function() {
-                    fetchAndPopulate(cargoSelect, 'get_cargos', 'departamento_id', this.value, 'Seleccione un cargo');
-                });
-
-                // --- Lógica del Sidebar ---
-                
-                sidebarToggle.addEventListener('click', function() {
-                    sidebar.classList.toggle('active');
-                    sidebarBlur.classList.toggle('active');
-                });
-                
-                sidebarBlur.addEventListener('click', function() {
-                    sidebar.classList.remove('active');
-                    sidebarBlur.classList.remove('active');
-                });
-                
-                // Ajustar sidebar en resize
-                window.addEventListener('resize', function() {
-                    if (window.innerWidth > 480) {
-                        sidebarBlur.classList.remove('active'); // Ocultar blur en pantallas más grandes
-                        if (window.innerWidth > 768) {
-                            sidebar.classList.add('active'); // Mostrar sidebar en pantallas grandes
-                        } else {
-                            sidebar.classList.remove('active'); // Ocultar sidebar en tablets
-                        }
-                    } else {
-                         // En pantallas pequeñas (<480), no forzar estado, dejar que el toggle funcione
-                    }
-                });
-                
-                // Estado inicial del sidebar basado en el tamaño de la ventana al cargar
-                 if (window.innerWidth > 768) {
-                     sidebar.classList.add('active');
-                 } else {
-                     sidebar.classList.remove('active');
-                 }
-
-            });
-            </script>
         </body>
         </html>
         <?php

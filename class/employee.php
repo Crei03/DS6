@@ -463,10 +463,6 @@ class Employee {
     public function getBloodTypeOptions() {
         $options = [
             ['value' => 'Desconocido', 'text' => 'Desconocido'],
-            ['value' => 'A', 'text' => 'A'],
-            ['value' => 'B', 'text' => 'B'],
-            ['value' => 'AB', 'text' => 'AB'],
-            ['value' => 'O', 'text' => 'O'],
             ['value' => 'A+', 'text' => 'A+'],
             ['value' => 'A-', 'text' => 'A-'],
             ['value' => 'B+', 'text' => 'B+'],

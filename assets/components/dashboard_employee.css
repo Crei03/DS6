@@ -1,0 +1,262 @@
+/* Archivo unificado de estilos relacionados con "employee" */
+
+/* ======== EMPLOYEE QUICK ACTIONS ======== */
+/* Estilos para employee_quick_actions.php */
+.employee-quick-actions {
+    display: flex;
+    gap: 18px;
+    margin-bottom: 28px;
+    flex-wrap: wrap;
+  }
+  .employee-quick-actions .btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 16px;
+    font-weight: 500;
+    text-decoration: none;
+    transition: background 0.2s;
+  }
+  .employee-quick-actions .btn-boton {
+    background: var(--color-boton);
+    color: #fff;
+  }
+  .employee-quick-actions .btn-boton:hover {
+    background: var(--color-boton-hover);
+  }
+  @media (max-width: 600px) {
+    .employee-quick-actions {
+      flex-direction: column;
+      gap: 10px;
+    }
+    .employee-quick-actions .btn {
+      font-size: 13px;
+      padding: 8px 10px;
+    }
+  }
+  @media (max-width: 430px) {
+    .employee-quick-actions {
+      gap: 6px;
+    }
+    .employee-quick-actions .btn {
+      font-size: 12px;
+      padding: 6px 6px;
+    }
+  }
+  
+  /* ======== EMPLOYEE PROFILE SUMMARY ======== */
+  /* Estilos para employee_profile_summary.php */
+  .employee-profile-summary.card {
+    margin-bottom: 24px;
+    padding: 20px 28px;
+    background: var(--color-contenedor);
+    border-radius: 8px;
+    box-shadow: var(--sombra-default);
+    max-width: 420px;
+  }
+  .profile-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 10px;
+    font-size: 16px;
+  }
+  .profile-label {
+    color: var(--color-texto-secundario);
+    font-weight: 600;
+    margin-right: 8px;
+  }
+  @media (max-width: 600px) {
+    .employee-profile-summary.card {
+      padding: 12px 8px;
+      font-size: 14px;
+      max-width: 100%;
+    }
+    .profile-row {
+      font-size: 14px;
+      flex-direction: column;
+      gap: 2px;
+    }
+  }
+  
+  /* ======== EMPLOYEE ATTENDANCE CHART ======== */
+  /* Estilos para employee_attendance_chart.php */
+  .employee-attendance-chart.card {
+    margin-bottom: 24px;
+    padding: 20px 28px;
+    background: var(--color-contenedor);
+    border-radius: 8px;
+    box-shadow: var(--sombra-default);
+    max-width: 420px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  .chart-title {
+    color: var(--color-titulo);
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 12px;
+  }
+  .attendance-placeholder {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    color: #95a5a6;
+    font-size: 15px;
+  }
+  .attendance-text {
+    margin-top: 8px;
+    color: #95a5a6;
+  }
+  @media (max-width: 600px) {
+    .employee-attendance-chart.card {
+      padding: 12px 8px;
+      font-size: 14px;
+      max-width: 100%;
+    }
+    .chart-title {
+      font-size: 15px;
+    }
+  }
+  
+  /* ======== EMPLOYEE METRICS ======== */
+  /* Estilos para employee_metrics.php */
+  .employee-metrics-container {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    margin-bottom: 32px;
+    width: 100%;
+  }
+  
+  .employee-metrics-row {
+    display: flex;
+    gap: 16px;
+    width: 100%;
+  }
+  
+  .metric-card {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    background: var(--color-contenedor);
+    border-radius: 12px;
+    padding: 16px 20px;
+    box-shadow: var(--sombra-default);
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+  
+  .metric-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(0,0,0,0.1);
+  }
+  
+  .metric-icon {
+    background: rgba(var(--color-boton-rgb), 0.1);
+    border-radius: 50%;
+    width: 48px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 16px;
+  }
+  
+  .metric-icon .material-icons {
+    color: var(--color-boton);
+    font-size: 24px;
+  }
+  
+  .metric-content {
+    flex: 1;
+    min-width: 0;
+  }
+  
+  .metric-value {
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: var(--color-titulo);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  
+  .metric-title {
+    color: var(--color-texto-secundario);
+    font-size: 0.9rem;
+  }
+  
+  /* Estilos específicos por tipo de tarjeta */
+  .metric-card.days-worked .metric-icon {
+    background: rgba(0, 117, 255, 0.1);
+  }
+  .metric-card.days-worked .metric-icon .material-icons {
+    color: #0075ff;
+  }
+  
+  .metric-card.department .metric-icon {
+    background: rgba(255, 91, 91, 0.1);
+  }
+  .metric-card.department .metric-icon .material-icons {
+    color: #ff5b5b;
+  }
+  
+  .metric-card.role .metric-icon {
+    background: rgba(146, 92, 255, 0.1);
+  }
+  .metric-card.role .metric-icon .material-icons {
+    color: #925cff;
+  }
+  
+  .metric-card.status .metric-icon {
+    background: rgba(0, 198, 137, 0.1);
+  }
+  .metric-card.status .metric-icon .material-icons {
+    color: #00c689;
+  }
+  
+  @media (max-width: 768px) {
+    .employee-metrics-row {
+      flex-direction: column;
+    }
+    
+    .metric-card {
+      width: 100%;
+    }
+  }
+  
+  @media (max-width: 600px) {
+    .metric-card {
+      padding: 12px 15px;
+    }
+    
+    .metric-icon {
+      width: 40px;
+      height: 40px;
+      margin-right: 12px;
+    }
+    
+    .metric-icon .material-icons {
+      font-size: 20px;
+    }
+    
+    .metric-value {
+      font-size: 1.3rem;
+    }
+  }
+  
+  @media (max-width: 430px) {
+    .metric-icon {
+      width: 36px;
+      height: 36px;
+      margin-right: 10px;
+    }
+    
+    .metric-value {
+      font-size: 1.1rem;
+    }
+    
+    .metric-title {
+      font-size: 0.8rem;
+    }
+  }

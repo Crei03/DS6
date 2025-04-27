@@ -5,7 +5,7 @@
 
 // Configuración de la base de datos
 define('DB_HOST', 'localhost');
-define('DB_USER', 'test');
+define('DB_USER', 'ds6');
 define('DB_PASS', '123');
 define('DB_NAME', 'ds6');
 

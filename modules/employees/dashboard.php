@@ -3,6 +3,12 @@ require_once '../../components/sidebar_menu.php';
 require_once '../../config/BdHandler.php';
 require_once '../../class/session.php';
 
+$sesion = new Session();
+if (!$sesion->esEmpleado()) {
+    $sesion->cerrarSesion();
+    $sesion->redirigir('../../modules/auth/login.php');
+}
+
 $cedula = $sesion->getCedula();
 $db = new DBHandler();
 
@@ -21,10 +27,7 @@ $db->close();
     <title>Mi Panel - Empleado</title>
     <link rel="stylesheet" href="../../assets/global/root.css">
     <link rel="stylesheet" href="../../assets/employees/dashboard.css">
-    <link rel="stylesheet" href="../../assets/components/employee_metrics.css">
-    <link rel="stylesheet" href="../../assets/components/employee_profile_summary.css">
-    <link rel="stylesheet" href="../../assets/components/employee_quick_actions.css">
-    <link rel="stylesheet" href="../../assets/components/employee_attendance_chart.css">
+    <link rel="stylesheet" href="../../assets/components/dashboard_employee.css">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 </head>
 <body>
@@ -40,8 +43,6 @@ $db->close();
         </div>
         <?php include '../../components/employees/employee_quick_actions.php'; ?>
         <?php include '../../components/employees/employee_metrics.php'; ?>
-        <?php include '../../components/employees/employee_profile_summary.php'; ?>
-        <?php include '../../components/employees/employee_attendance_chart.php'; ?>
     </div>
     <script>
         document.addEventListener('DOMContentLoaded', function() {

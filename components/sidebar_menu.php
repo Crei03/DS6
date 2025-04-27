@@ -86,6 +86,27 @@ function renderSidebar($activeMenu = '') {
             link: '../admin/employee_add.php',
             id: 'employee_add'      
         );
+
+        $menuOptions[] = new menuOption( 
+            icon: 'apartment',
+            text: 'Agregar Departamento',
+            link: '../admin/department_add.php',
+            id: 'department_add'      
+        );
+
+        $menuOptions[] = new menuOption( 
+            icon: 'work',
+            text: 'Agregar Cargo',
+            link: '../admin/cargo_add.php',
+            id: 'cargo_add'      
+        );
+
+        $menuOptions[] = new menuOption( 
+            icon: 'person_add',
+            text: 'Agregar Administrador',
+            link: '../admin/admin_add.php',
+            id: 'admin_add'      
+        );
         
     } elseif ($sesion->esEmpleado()) {
         // Opciones para empleados

@@ -6,6 +6,7 @@ require_once '../../class/session.php';
 // Verificar sesión del usuario
 $sesion = new Session();
 if (!$sesion->esAdmin()) {
+    $sesion->cerrarSesion();
     $sesion->redirigir('../../modules/auth/login.php');
 }
 
@@ -24,10 +25,7 @@ require_once '../../components/sidebar_menu.php';
     <title>FormAntro - Dashboard</title>
     <link rel="stylesheet" href="../../assets/global/root.css">
     <link rel="stylesheet" href="../../assets/admin/dashboard.css">
-    <link rel="stylesheet" href="../../assets/components/dashboard_metrics.css">
-    <link rel="stylesheet" href="../../assets/components/dashboard_recent_employees.css">
-    <link rel="stylesheet" href="../../assets/components/dashboard_quick_actions.css">
-    <link rel="stylesheet" href="../../assets/components/dashboard_department_chart.css">
+    <link rel="stylesheet" href="../../assets/components/dashboard_admin.css">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 </head>
 <body>

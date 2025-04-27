@@ -233,7 +233,7 @@ class MyProfile {
                 </div>
                 
                 <div class="profile-content">
-                    <form id="profile-form" method="post" action="update_profile.php">
+                    <form id="profile-form">
                         <input type="hidden" name="employee_id" value="<?php echo $this->employee->get('cedula'); ?>">
                         <input type="hidden" name="active_tab" value="<?php echo $this->activeTab; ?>">
                         
@@ -336,6 +336,53 @@ class MyProfile {
                             } else {
                                 sidebar.classList.add('active');
                             }
+                        }
+                    });
+                });
+
+                // --- ENVÍO AJAX DEL FORMULARIO DE PERFIL ---
+                document.addEventListener('DOMContentLoaded', function() {
+                    const form = document.getElementById('profile-form');
+                    form.addEventListener('submit', async function(e) {
+                        e.preventDefault();
+                        // Solo recolectar campos habilitados
+                        const data = {};
+                        const cedula = form.querySelector('input[name="employee_id"]').value;
+                        const tab = form.querySelector('input[name="active_tab"]').value;
+                        // Solo los inputs y selects habilitados (no disabled)
+                        form.querySelectorAll('input:not([disabled]), select:not([disabled]), textarea:not([disabled])').forEach(el => {
+                            if (el.name && el.type !== 'hidden' && el.type !== 'submit' && el.type !== 'button') {
+                                data[el.name] = el.value;
+                            }
+                        });
+                        // Enviar petición fetch
+                        try {
+                            const resp = await fetch('../../config/controlador.php', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({
+                                    action: 'update',
+                                    table: 'empleados',
+                                    id: cedula,
+                                    data
+                                })
+                            });
+                            const result = await resp.json();
+                            let msg = document.getElementById('profile-msg');
+                            if (!msg) {
+                                msg = document.createElement('div');
+                                msg.id = 'profile-msg';
+                                msg.style.margin = '1rem 0';
+                                form.parentNode.insertBefore(msg, form);
+                            }
+                            if (result.status === 'ok' || result.updated) {
+                                msg.innerHTML = '<span style="color:green">¡Datos actualizados correctamente!</span>';
+                                setTimeout(()=>{ msg.innerHTML = ''; }, 2500);
+                            } else {
+                                msg.innerHTML = '<span style="color:red">' + (result.message || 'Error al actualizar') + '</span>';
+                            }
+                        } catch (err) {
+                            alert('Error de red o del servidor.');
                         }
                     });
                 });

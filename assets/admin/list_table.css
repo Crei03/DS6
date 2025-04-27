@@ -51,8 +51,9 @@
     color: white;
     border: none;
     border-radius: 0 4px 4px 0;
-    padding: 10px 15px;
+    padding: 8px 12px;
     cursor: pointer;
+    font-size: 14px;
 }
 
 .add-button {
@@ -60,7 +61,7 @@
     color: white;
     border: none;
     border-radius: 4px;
-    padding: 10px 15px;
+    padding: 8px 12px;
     cursor: pointer;
     font-size: 14px;
     display: inline-flex;
@@ -80,11 +81,11 @@
 }
 
 .inactive-button {
-    background-color: #7f8c8d;
+    background-color: #f39c12;
     color: white;
     border: none;
     border-radius: 4px;
-    padding: 10px 15px;
+    padding: 8px 12px;
     cursor: pointer;
     font-size: 14px;
     display: inline-flex;
@@ -95,7 +96,7 @@
 }
 
 .inactive-button:hover {
-    background-color: #6c7a89;
+    background-color: #f39c12;
 }
 
 .inactive-button .material-icons {
@@ -108,7 +109,7 @@
     color: white;
     border: none;
     border-radius: 4px;
-    padding: 10px 15px;
+    padding: 8px 12px;
     cursor: pointer;
     font-size: 14px;
     display: inline-flex;
@@ -124,6 +125,104 @@
 .back-button .material-icons {
     font-size: 16px;
     margin-right: 4px;
+}
+
+.quick-inactive {
+    background-color: #f39c12;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    padding: 8px 12px;
+    cursor: pointer;
+    font-size: 14px;
+    display: inline-flex;
+    align-items: center;
+    margin-left: 10px;
+    text-decoration: none;
+    transition: background-color 0.3s;
+}
+
+.quick-inactive:hover {
+    background-color: #f39c12;
+}
+
+.quick-inactive .material-icons {
+    font-size: 16px;
+    margin-right: 4px;
+}
+
+.quick-delete {
+    background-color: #e74c3c;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    padding: 8px 12px;
+    cursor: pointer;
+    font-size: 14px;
+    display: inline-flex;
+    align-items: center;
+    margin-left: 10px;
+    text-decoration: none;
+    transition: background-color 0.3s;
+}
+
+.quick-delete:hover {
+    background-color: #c0392b;
+}
+
+.quick-delete .material-icons {
+    font-size: 16px;
+    margin-right: 4px;
+}
+
+/* Botón de activar empleados */
+.activate-button {
+    background: linear-gradient(45deg, #2ecc71, #27ae60);
+    color: #fff;
+    border: none;
+    padding: 10px 16px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.95rem;
+    font-weight: 600;
+    box-shadow: 0 2px 8px rgba(46, 204, 113, 0.3);
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.activate-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(46, 204, 113, 0.5);
+    background: linear-gradient(45deg, #27ae60, #2ecc71);
+}
+
+.activate-button:active {
+    transform: translateY(1px);
+    box-shadow: 0 2px 4px rgba(46, 204, 113, 0.4);
+}
+
+.activate-button .material-icons {
+    font-size: 20px;
+}
+
+/* Efecto de pulso para enfatizar la acción */
+@keyframes pulse {
+    0% {
+        box-shadow: 0 0 0 0 rgba(46, 204, 113, 0.7);
+    }
+    70% {
+        box-shadow: 0 0 0 10px rgba(46, 204, 113, 0);
+    }
+    100% {
+        box-shadow: 0 0 0 0 rgba(46, 204, 113, 0);
+    }
+}
+
+.activate-button:focus {
+    animation: pulse 1.5s infinite;
+    outline: none;
 }
 
 /* Estilos de la tabla */
@@ -175,6 +274,7 @@
     display: inline-flex;
     align-items: center;
     transition: background-color 0.3s;
+    font-size: 14px;
 }
 
 .details-button:hover {
@@ -241,17 +341,23 @@
 .pagination {
     display: flex;
     justify-content: center;
+    align-items: center;
     margin-top: 20px;
+    gap: 5px;
 }
 
 .pagination-button {
     background-color: var(--color-contenedor);
     border: 1px solid var(--color-borde);
     padding: 8px 12px;
-    margin: 0 5px;
+    margin: 0 2px;
     cursor: pointer;
     border-radius: 4px;
     transition: background-color 0.3s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #333; /* Color de texto más oscuro para mejor contraste */
 }
 
 .pagination-button:hover {
@@ -259,6 +365,46 @@
 }
 
 .pagination-button.active {
+    background-color: var(--color-boton);
+    color: white;
+    border-color: var(--color-boton);
+}
+
+/* Estilo específico para el botón nextPage para mejorar visibilidad */
+#nextPage, #prevPage, #firstPage, #lastPage {
+    background-color: var(--color-boton);
+    color: white;
+}
+
+#nextPage:hover, #prevPage:hover, #firstPage:hover, #lastPage:hover {
+    background-color: var(--color-boton-hover);
+}
+
+.pagination-button .material-icons {
+    font-size: 18px;
+}
+
+.page-numbers {
+    display: flex;
+    gap: 5px;
+}
+
+.pagination-number {
+    background-color: var(--color-contenedor);
+    border: 1px solid var(--color-borde);
+    padding: 8px 12px;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: background-color 0.3s;
+    min-width: 40px;
+    text-align: center;
+}
+
+.pagination-number:hover {
+    background-color: var(--color-bg-principal);
+}
+
+.pagination-number.active {
     background-color: var(--color-boton);
     color: white;
     border-color: var(--color-boton);

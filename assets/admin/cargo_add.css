@@ -1,0 +1,231 @@
+/* Estilos para la página de gestión de cargos */
+
+/* Variables de colores y apariencia moderna */
+:root {
+    --primary-color: #2563eb;
+    --primary-color-dark: #1e40af;
+    --secondary-color: #64748b;
+    --bg-card: #fff;
+    --bg-light: #f1f5f9;
+    --hover-bg: #e0e7ef;
+    --text-dark: #1e293b;
+    --border-color: #e2e8f0;
+    --danger-color: #ef4444;
+    --danger-color-dark: #b91c1c;
+    --danger-bg: #fee2e2;
+    --success-color: #22c55e;
+    --success-bg: #dcfce7;
+    --shadow: 0 4px 24px 0 rgba(30, 41, 59, 0.08);
+}
+
+body {
+    background: #f4f4f4;
+    font-family: 'Segoe UI', 'Roboto', Arial, sans-serif;
+    color: var(--text-dark);
+}
+
+.container {
+    display: flex;
+    min-height: 100vh;
+}
+
+.main-content {
+    flex: 1;
+    padding: 40px 5vw;
+    background: transparent;
+}
+
+.card {
+    background: var(--bg-card);
+    border-radius: 18px;
+    box-shadow: var(--shadow);
+    margin-bottom: 32px;
+    padding: 32px 28px;
+    transition: box-shadow 0.2s;
+}
+
+.card:hover {
+    box-shadow: 0 8px 32px 0 rgba(30, 41, 59, 0.14);
+}
+
+h1 {
+    color: var(--primary-color);
+    font-size: 2.2rem;
+    font-weight: 700;
+    margin-bottom: 32px;
+    letter-spacing: -1px;
+}
+
+h2 {
+    color: var(--secondary-color);
+    margin-bottom: 18px;
+    font-size: 1.3rem;
+    font-weight: 600;
+}
+
+/* Estilos del formulario modernizados */
+.form-group {
+    margin-bottom: 22px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 7px;
+    font-weight: 600;
+    color: var(--primary-color);
+    letter-spacing: 0.5px;
+}
+
+.form-group input, .form-group select {
+    width: 100%;
+    padding: 12px 14px;
+    border: 1.5px solid var(--border-color);
+    border-radius: 8px;
+    font-size: 1.05rem;
+    background: var(--bg-light);
+    transition: border 0.2s;
+}
+
+.form-group input:focus, .form-group select:focus {
+    border: 1.5px solid var(--primary-color);
+    outline: none;
+    background: #fff;
+}
+
+.form-group select {
+    appearance: none;
+    background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%232563eb%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E");
+    background-repeat: no-repeat;
+    background-position: right 1rem top 50%;
+    background-size: 0.75rem auto;
+    padding-right: 2.5rem;
+}
+
+.btn-submit {
+    background: linear-gradient(90deg, var(--primary-color) 60%, var(--primary-color-dark) 100%);
+    color: #fff;
+    border: none;
+    padding: 12px 32px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1.08rem;
+    font-weight: 600;
+    box-shadow: 0 2px 8px 0 rgba(37, 99, 235, 0.08);
+    transition: background 0.2s, box-shadow 0.2s;
+}
+
+.btn-submit:hover {
+    background: linear-gradient(90deg, var(--primary-color-dark) 60%, var(--primary-color) 100%);
+    box-shadow: 0 4px 16px 0 rgba(37, 99, 235, 0.12);
+}
+
+/* Estilos de la tabla modernizados */
+.table-container {
+    overflow-x: auto;
+    border-radius: 12px;
+    background: var(--bg-light);
+    box-shadow: 0 1px 4px 0 rgba(30, 41, 59, 0.04);
+}
+
+table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    font-size: 1.01rem;
+}
+
+table th, table td {
+    padding: 14px 18px;
+    text-align: left;
+    border-bottom: 1.5px solid var(--border-color);
+}
+
+table th {
+    background: var(--bg-card);
+    color: var(--primary-color);
+    font-weight: 700;
+    letter-spacing: 0.5px;
+}
+
+table tr:nth-child(even) {
+    background: #f8fafc;
+}
+
+table tr:hover {
+    background: var(--hover-bg);
+    transition: background 0.2s;
+}
+
+.btn-delete {
+    background: var(--danger-color);
+    color: #fff;
+    border: none;
+    padding: 7px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background 0.2s;
+    box-shadow: 0 1px 4px 0 rgba(239, 68, 68, 0.08);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 36px;
+    min-height: 36px;
+}
+
+.btn-delete:hover {
+    background: var(--danger-color-dark);
+}
+
+.btn-delete .material-icons {
+    font-size: 20px; /* Tamaño adecuado para los íconos de Material */
+    line-height: 1;
+}
+
+/* Estilos para mensajes modernizados */
+.result-message {
+    padding: 12px 18px;
+    margin-top: 18px;
+    border-radius: 6px;
+    font-size: 1.05rem;
+    display: none;
+}
+
+.result-message.success {
+    background: var(--success-bg);
+    color: var(--success-color);
+    display: block;
+}
+
+.result-message.error {
+    background: var(--danger-bg);
+    color: var(--danger-color);
+    display: block;
+}
+
+/* Responsividad mejorada */
+@media (max-width: 900px) {
+    .main-content {
+        padding: 24px 2vw;
+    }
+    .card {
+        padding: 18px 8px;
+    }
+    table th, table td {
+        padding: 8px 6px;
+    }
+}
+
+@media (max-width: 600px) {
+    .main-content {
+        padding: 10px 2vw;
+    }
+    h1 {
+        font-size: 1.3rem;
+    }
+    h2 {
+        font-size: 1.05rem;
+    }
+    .card {
+        padding: 10px 2px;
+    }
+}

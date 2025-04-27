@@ -12,55 +12,6 @@ if (!$sesion->esAdmin()) {
     $sesion->redirigir('../../modules/auth/login.php');
 }
 
-// --- INICIO: Manejo de solicitudes AJAX ---
-if (isset($_GET['ajax'])) {
-    header('Content-Type: application/json');
-    $response = ['status' => 'error', 'message' => 'Acción no válida'];
-    $dbHandler = new DBHandler();
-    $action = $_GET['ajax'];
-    $id = null;
-    $result = null;
-
-    switch ($action) {
-        case 'get_distritos':
-            if (isset($_GET['provincia_id'])) {
-                $id = $_GET['provincia_id'];
-                $result = $dbHandler->getDistritosByProvincia($id);
-            } else {
-                $response['message'] = 'Falta provincia_id';
-            }
-            break;
-        case 'get_corregimientos':
-            if (isset($_GET['distrito_id'])) {
-                $id = $_GET['distrito_id'];
-                $result = $dbHandler->getCorregimientosByDistrito($id);
-            } else {
-                $response['message'] = 'Falta distrito_id';
-            }
-            break;
-        case 'get_cargos':
-            if (isset($_GET['departamento_id'])) {
-                $id = $_GET['departamento_id'];
-                $result = $dbHandler->getCargosByDepartamento($id);
-            } else {
-                $response['message'] = 'Falta departamento_id';
-            }
-            break;
-    }
-
-    if ($result !== null) {
-        if ($result['status'] === 'ok') {
-            $response = ['status' => 'ok', 'data' => $result['data']];
-        } else {
-            $response['message'] = $result['message'];
-        }
-    }
-
-    echo json_encode($response);
-    exit;
-}
-// --- FIN: Manejo de solicitudes AJAX ---
-
 require_once '../../components/sidebar_menu.php';
 
 // Incluir los componentes necesarios
@@ -261,352 +212,126 @@ class EmployeeAdd {
                     <div class="card employee-card">
                         <h1 class="text-center">Agregar Nuevo Empleado</h1>
                         <div style="display: flex; justify-content: flex-start; margin-bottom: 1.5rem;">
-                            <button type="button" class="back-button" id="btn-regresar" style="margin-right: 8px;">
+                            <button type="button" class="back-button" id="btn-regresar" style="margin-right: 8px;" onclick="window.history.length > 1 ? window.history.back() : window.location.href='list_table.php';">
                                 <span class="material-icons">arrow_back</span>Regresar
                             </button>
                         </div>
                         
-                        <form id="employeeForm" method="POST" action="save_employee.php">
+                        <div id="alert-container"></div>
+                        <form id="employeeForm">
                             <?php 
-                            // Renderizar cada componente
                             $personalInfo->render();
                             $contactInfo->render();
                             $addressInfo->render();
                             $workInfo->render();
                             ?>
-                            
                             <div class="button-group">
                                 <button type="submit" class="btn">Guardar</button>
                                 <button type="button" class="btn btn-secondary" onclick="history.back()">Cancelar</button>
                             </div>
                         </form>
+
+                        <script type="module">
+                            import { validarCedulaPanama } from '../../config/validation.js';
+
+                            document.addEventListener('DOMContentLoaded', async () => {
+                                // Elementos de formulario
+                                const form = document.getElementById('employeeForm');
+                                const cedulaHidden = document.getElementById('cedula_hidden');
+                                const prefijo = document.getElementById('prefijo');
+                                const tomo = document.getElementById('tomo');
+                                const asiento = document.getElementById('asiento');
+                                const cedulaInput = document.getElementById('cedula');
+                                const provinciaSelect = document.getElementById('provincia');
+                                const distritoSelect = document.getElementById('distrito');
+                                const corregimientoSelect = document.getElementById('corregimiento');
+                                const departamentoSelect = document.getElementById('departamento');
+                                const cargoSelect = document.getElementById('cargo');
+                                const errorDiv = document.getElementById('alert-container');
+
+                                // Validación de cédula
+                                cedulaInput.addEventListener('input', () => validarCedulaPanama(cedulaInput));
+                                [prefijo, tomo, asiento].forEach(el => el.addEventListener('input', () => {
+                                    cet = `${prefijo.value}-${tomo.value}-${asiento.value}`.replace(/--/g,'-');
+                                    cedulaInput.value = cet;
+                                    cedulaHidden.value = cet;
+                                }));
+
+                                // Cargar catálogos
+                                async function fetchCatalogo(table) {
+                                    const res = await fetch('../../config/controlador.php', {
+                                        method: 'POST', headers:{'Content-Type':'application/json'},
+                                        body: JSON.stringify({ action:'readAll', table })
+                                    });
+                                    const json = await res.json();
+                                    return json.status==='ok' && Array.isArray(json.data) ? json.data : [];
+                                }
+                                const [provincias, distritosAll, corregimientosAll, departamentos, cargosAll] =
+                                    await Promise.all([
+                                        fetchCatalogo('provincia'),
+                                        fetchCatalogo('distrito'),
+                                        fetchCatalogo('corregimiento'),
+                                        fetchCatalogo('departamento'),
+                                        fetchCatalogo('cargo')
+                                    ]);
+
+                                function populate(select, data, valField, txtField) {
+                                    select.innerHTML = `<option value="">Seleccionar</option>` +
+                                        data.map(d => `<option value="${d[valField]}">${d[txtField]}</option>`).join('');
+                                    select.disabled = false;
+                                }
+                                populate(provinciaSelect, provincias, 'codigo_provincia', 'nombre_provincia');
+                                provinceChange();
+                                provinciaSelect.addEventListener('change', provinceChange);
+
+                                function provinceChange() {
+                                    const pid = provinciaSelect.value;
+                                    const list = distritosAll.filter(d=>d.codigo_provincia==pid);
+                                    populate(distritoSelect, list, 'codigo_distrito', 'nombre_distrito');
+                                    corregimientoSelect.innerHTML = `<option>Seleccione distrito primero</option>`;
+                                    corregimientoSelect.disabled = true;
+                                }
+                                distritoSelect.addEventListener('change', () => {
+                                    const did = distritoSelect.value;
+                                    const list = corregimientosAll.filter(c=>c.codigo_distrito==did);
+                                    populate(corregimientoSelect, list, 'codigo_corregimiento', 'nombre_corregimiento');
+                                });
+
+                                populate(departamentoSelect, departamentos, 'codigo', 'nombre');
+                                departamentoSelect.addEventListener('change', () => {
+                                    const dept = departamentoSelect.value;
+                                    const list = cargosAll.filter(c=>c.dep_codigo==dept);
+                                    populate(cargoSelect, list, 'codigo', 'nombre');
+                                });
+
+                                // Manejar envío de formulario
+                                form.addEventListener('submit', async e => {
+                                    e.preventDefault();
+                                    errorDiv.innerHTML = '';
+                                    const formData = new FormData(form);
+                                    const data = {};
+                                    formData.forEach((v,k)=> data[k]=v);
+                                    console.log('Datos a enviar:', data);
+                                    if (!data.cedula) {
+                                        errorDiv.textContent = 'Cédula inválida'; return;
+                                    }
+                                    // Enviar datos al controlador
+                                    const resp = await fetch('../../config/controlador.php', {
+                                        method:'POST', headers:{'Content-Type':'application/json'},
+                                        body: JSON.stringify({ action:'create', table:'empleados', data })
+                                    });
+                                    const result = await resp.json();
+                                    if (result.status==='ok' || result.insertedId) {
+                                        window.location.href = 'list_table.php';
+                                    } else {
+                                        errorDiv.textContent = result.message || 'Error al guardar';
+                                    }
+                                });
+                            });
+                        </script>
                     </div>
                 </main>
             </div>
-            
-            <script>
-            // Funciones de validación para inputs
-            function validarSoloNumeros(valor) {
-                // Eliminar cualquier carácter que no sea un número
-                return valor.replace(/[^0-9]/g, '');
-            }
-
-            function validarSoloLetras(valor) {
-                // Eliminar cualquier carácter que no sea una letra o espacio
-                return valor.replace(/[^a-zA-ZáéíóúÁÉÍÓÚüÜñÑ\s]/g, '');
-            }
-            
-            // Validación para prevenir envío de formulario con opciones "Seleccionar" o campos obligatorios vacíos
-            document.addEventListener('DOMContentLoaded', function() {
-                const employeeForm = document.getElementById('employeeForm');
-                
-                // Aplicar estilos iniciales a los selects vacíos
-                const selectElements = employeeForm.querySelectorAll('select');
-                selectElements.forEach(function(select) {
-                    if (select.value === '') {
-                        select.classList.add('invalid-select');
-                    }
-                    
-                    select.addEventListener('change', function() {
-                        if (this.value !== '') {
-                            this.classList.remove('invalid-select');
-                        } else {
-                            this.classList.add('invalid-select');
-                        }
-                    });
-                });
-                
-                // Campos que deben ser excluidos de la validación obligatoria
-                const excludedFields = ['nombre2', 'apellido2', 'casa', 'comunidad'];
-                
-                // Obtener todos los inputs con atributo 'required'
-                let inputElements = Array.from(employeeForm.querySelectorAll('input[required]'));
-                
-                // Filtrar los campos excluidos
-                inputElements = inputElements.filter(input => {
-                    return !excludedFields.includes(input.id) && !excludedFields.includes(input.name);
-                });
-                
-                // Manejo especial para el apellido de casada
-                const usaAcSelect = document.getElementById('usa_ac');
-                const apellidoCasadaField = document.getElementById('apellidoc');
-                
-                // Función para actualizar la validación del apellido de casada
-                function updateApellidoCasadaValidation() {
-                    if (usaAcSelect && apellidoCasadaField) {
-                        if (usaAcSelect.value === '1') { // Si usa apellido de casada es "Sí"
-                            // Agregar al array de inputs a validar si no está
-                            const index = inputElements.indexOf(apellidoCasadaField);
-                            if (index === -1) {
-                                inputElements.push(apellidoCasadaField);
-                            }
-                            
-                            // Verificar estado actual y aplicar estilo si está vacío
-                            if (apellidoCasadaField.value.trim() === '') {
-                                apellidoCasadaField.classList.add('invalid-input');
-                            } else {
-                                apellidoCasadaField.classList.remove('invalid-input');
-                            }
-                        } else {
-                            // Si no usa apellido de casada, quitarlo del array de validación
-                            const index = inputElements.indexOf(apellidoCasadaField);
-                            if (index > -1) {
-                                inputElements.splice(index, 1);
-                            }
-                            // Y quitar cualquier estilo de error
-                            apellidoCasadaField.classList.remove('invalid-input');
-                        }
-                    }
-                }
-                
-                // Configurar evento para el cambio en usa_ac
-                if (usaAcSelect) {
-                    usaAcSelect.addEventListener('change', updateApellidoCasadaValidation);
-                    // Ejecutar una vez al inicio para establecer el estado inicial
-                    updateApellidoCasadaValidation();
-                }
-                
-                // Aplicar estilos iniciales a todos los inputs requeridos vacíos
-                inputElements.forEach(function(input) {
-                    // Verificar estado inicial
-                    if (input.value.trim() === '') {
-                        input.classList.add('invalid-input');
-                    }
-                    
-                    // Escuchar cambios en tiempo real
-                    input.addEventListener('input', function() {
-                        if (this.value.trim() !== '') {
-                            this.classList.remove('invalid-input');
-                        } else {
-                            this.classList.add('invalid-input');
-                        }
-                    });
-                });
-                
-                // Validación al enviar el formulario
-                employeeForm.addEventListener('submit', function(event) {
-                    let formValid = true;
-                    let firstInvalidField = null;
-                    
-                    // Validar selects
-                    selectElements.forEach(function(select) {
-                        if (select.value === '') {
-                            formValid = false;
-                            select.classList.add('invalid-select');
-                            
-                            if (!firstInvalidField) {
-                                firstInvalidField = select;
-                            }
-                        } else {
-                            select.classList.remove('invalid-select');
-                        }
-                    });
-                    
-                    // Validar inputs requeridos
-                    inputElements.forEach(function(input) {
-                        // Excepción para apellido de casada cuando no se usa
-                        if (input.id === 'apellidoc' && usaAcSelect && usaAcSelect.value === '0') {
-                            return;
-                        }
-                        
-                        if (input.value.trim() === '') {
-                            formValid = false;
-                            input.classList.add('invalid-input');
-                            
-                            if (!firstInvalidField) {
-                                firstInvalidField = input;
-                            }
-                        } else {
-                            input.classList.remove('invalid-input');
-                        }
-                    });
-                    
-                    // Si hay campos inválidos, prevenir envío y mostrar mensaje
-                    if (!formValid) {
-                        event.preventDefault();
-                        alert('No se permite enviar el formulario con campos obligatorios vacíos. Por favor, complete todos los campos requeridos.');
-                        
-                        // Hacer scroll al primer campo inválido
-                        if (firstInvalidField) {
-                            firstInvalidField.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                            firstInvalidField.focus();
-                        }
-                    }
-                });
-                
-                // Botón Regresar: redirige a la página anterior si existe, si no usa history.back()
-                const btnRegresar = document.getElementById('btn-regresar');
-                if (btnRegresar) {
-                    btnRegresar.addEventListener('click', function() {
-                        if (document.referrer && document.referrer !== window.location.href) {
-                            window.location.href = document.referrer;
-                        } else {
-                            history.back();
-                        }
-                    });
-                }
-                
-                // Código para actualizar automáticamente el campo cédula
-                const prefijoInput = document.getElementById('prefijo');
-                const tomoInput = document.getElementById('tomo');
-                const asientoInput = document.getElementById('asiento');
-                const cedulaInput = document.getElementById('cedula');
-                
-                function actualizarCedula() {
-                    if (prefijoInput && tomoInput && asientoInput && cedulaInput) {
-                        const prefijo = prefijoInput.value.trim();
-                        const tomo = tomoInput.value.trim();
-                        const asiento = asientoInput.value.trim();
-                        
-                        // Solo actualizar si hay al menos uno de los campos
-                        if (prefijo || tomo || asiento) {
-                            cedulaInput.value = `${prefijo}-${tomo}-${asiento}`.replace(/--/g, '-');
-                        }
-                    }
-                }
-                
-                // Añadir eventos para actualización automática
-                if (prefijoInput) prefijoInput.addEventListener('input', actualizarCedula);
-                if (tomoInput) tomoInput.addEventListener('input', actualizarCedula);
-                if (asientoInput) asientoInput.addEventListener('input', actualizarCedula);
-                
-                // Script para cargar los distritos y corregimientos de forma dinámica
-                const provinciaSelect = document.getElementById('provincia');
-                const distritoSelect = document.getElementById('distrito');
-                const corregimientoSelect = document.getElementById('corregimiento');
-                const departamentoSelect = document.getElementById('departamento');
-                const cargoSelect = document.getElementById('cargo');
-                
-                // Function para realizar peticiones AJAX
-                function fetchData(url, handleData) {
-                    fetch(url)
-                        .then(response => {
-                            if (!response.ok) {
-                                throw new Error(`Error HTTP: ${response.status}`);
-                            }
-                            return response.json();
-                        })
-                        .then(data => handleData(data))
-                        .catch(error => {
-                            console.error('Error en fetch:', error);
-                        });
-                }
-                
-                // Función para poblar un select con opciones
-                function populateSelect(selectElement, data, defaultOptionText, valueField, textField) {
-                    selectElement.innerHTML = `<option value="">${defaultOptionText}</option>`;
-                    if (data && data.length > 0) {
-                        data.forEach(item => {
-                            const option = document.createElement('option');
-                            option.value = item[valueField];
-                            option.textContent = item[textField];
-                            selectElement.appendChild(option);
-                        });
-                    } else {
-                        selectElement.innerHTML = `<option value="">No hay opciones disponibles</option>`;
-                    }
-                }
-                
-                // Función para limpiar y deshabilitar selects dependientes
-                function resetDependentSelects(selects) {
-                    selects.forEach(select => {
-                        select.innerHTML = `<option value="">Seleccione primero el nivel anterior</option>`;
-                        select.disabled = true;
-                    });
-                }
-                
-                // Event listener para Provincia -> Distrito
-                provinciaSelect.addEventListener('change', function() {
-                    const provinciaId = this.value;
-                    resetDependentSelects([distritoSelect, corregimientoSelect]);
-                    
-                    if (provinciaId) {
-                        distritoSelect.innerHTML = '<option value="">Cargando...</option>';
-                        fetchData(`employee_add.php?ajax=get_distritos&provincia_id=${provinciaId}`, function(response) {
-                            if (response.status === 'ok') {
-                                populateSelect(distritoSelect, response.data, 'Seleccione un distrito', 'codigo_distrito', 'nombre_distrito');
-                                distritoSelect.disabled = false;
-                            } else {
-                                distritoSelect.innerHTML = '<option value="">Error al cargar distritos</option>';
-                                distritoSelect.disabled = true;
-                            }
-                            corregimientoSelect.innerHTML = '<option value="">Seleccione un distrito primero</option>';
-                            corregimientoSelect.disabled = true;
-                        });
-                    }
-                });
-                
-                // Event listener para Distrito -> Corregimiento
-                distritoSelect.addEventListener('change', function() {
-                    const distritoId = this.value;
-                    resetDependentSelects([corregimientoSelect]);
-                    
-                    if (distritoId) {
-                        corregimientoSelect.innerHTML = '<option value="">Cargando...</option>';
-                        fetchData(`employee_add.php?ajax=get_corregimientos&distrito_id=${distritoId}`, function(response) {
-                            if (response.status === 'ok') {
-                                populateSelect(corregimientoSelect, response.data, 'Seleccione un corregimiento', 'codigo_corregimiento', 'nombre_corregimiento');
-                                corregimientoSelect.disabled = false;
-                            } else {
-                                corregimientoSelect.innerHTML = '<option value="">Error al cargar corregimientos</option>';
-                                corregimientoSelect.disabled = true;
-                            }
-                        });
-                    }
-                });
-                
-                // Event listener para Departamento -> Cargo
-                departamentoSelect.addEventListener('change', function() {
-                    const departamentoId = this.value;
-                    resetDependentSelects([cargoSelect]);
-                    
-                    if (departamentoId) {
-                        cargoSelect.innerHTML = '<option value="">Cargando...</option>';
-                        fetchData(`employee_add.php?ajax=get_cargos&departamento_id=${departamentoId}`, function(data) {
-                            if (data.status === 'ok') {
-                                populateSelect(cargoSelect, data.data, 'Seleccione un cargo', 'codigo', 'nombre');
-                                cargoSelect.disabled = false;
-                            } else {
-                                cargoSelect.innerHTML = '<option value="">Error al cargar cargos</option>';
-                                cargoSelect.disabled = true;
-                            }
-                        });
-                    }
-                });
-                
-                // Inicializar selects dependientes como deshabilitados
-                resetDependentSelects([distritoSelect, corregimientoSelect, cargoSelect]);
-                
-                // Funcionalidad del sidebar responsive
-                const sidebarToggle = document.getElementById('sidebar-toggle');
-                const sidebar = document.querySelector('.sidebar');
-                const sidebarBlur = document.getElementById('sidebar-blur');
-                
-                // Función para mostrar/ocultar el sidebar
-                sidebarToggle.addEventListener('click', function() {
-                    sidebar.classList.toggle('active');
-                    sidebarBlur.classList.toggle('active');
-                });
-                
-                // Cerrar el sidebar al hacer clic en el área semi-transparente
-                sidebarBlur.addEventListener('click', function() {
-                    sidebar.classList.remove('active');
-                    sidebarBlur.classList.remove('active');
-                });
-                
-                // Ajustar la visualización en cambios de tamaño de ventana
-                window.addEventListener('resize', function() {
-                    if (window.innerWidth > 480) {
-                        sidebarBlur.classList.remove('active');
-                        if (window.innerWidth <= 768) {
-                            sidebar.classList.remove('active');
-                        } else {
-                            sidebar.classList.add('active');
-                        }
-                    }
-                });
-            });
-            </script>
         </body>
         </html>
         <?php

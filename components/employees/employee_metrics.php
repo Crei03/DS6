@@ -22,10 +22,6 @@ if ($empleado && isset($empleado['f_contra'])) {
     $diasTrabajados = $fechaIngreso->diff($hoy)->days;
 }
 
-// Días de ausencia (placeholder, requiere tabla de asistencias)
-$diasAusencia = '-';
-// Si tienes una tabla de asistencias, aquí puedes calcularlo
-
 // Departamento y cargo
 $departamento = '-';
 $cargo = '-';
@@ -42,21 +38,37 @@ if ($empleado) {
 $estado = ($empleado && isset($empleado['estado']) && $empleado['estado'] == 1) ? 'Activo' : 'Inactivo';
 $db->close();
 ?>
-<div class="employee-metrics-cards">
-    <div class="card">
-        <div class="card-title">Días trabajados</div>
-        <div class="card-value"><?php echo $diasTrabajados; ?></div>
+<div class="employee-metrics-container">
+    <div class="employee-metrics-row">
+        <div class="metric-card days-worked">
+            <span class="metric-icon"><span class="material-icons">date_range</span></span>
+            <div class="metric-content">
+                <div class="metric-value"><?php echo $diasTrabajados; ?></div>
+                <div class="metric-title">Días trabajados</div>
+            </div>
+        </div>
+        <div class="metric-card department">
+            <span class="metric-icon"><span class="material-icons">business</span></span>
+            <div class="metric-content">
+                <div class="metric-value"><?php echo htmlspecialchars($departamento); ?></div>
+                <div class="metric-title">Departamento</div>
+            </div>
+        </div>
     </div>
-    <div class="card">
-        <div class="card-title">Departamento</div>
-        <div class="card-value"><?php echo htmlspecialchars($departamento); ?></div>
-    </div>
-    <div class="card">
-        <div class="card-title">Cargo</div>
-        <div class="card-value"><?php echo htmlspecialchars($cargo); ?></div>
-    </div>
-    <div class="card">
-        <div class="card-title">Estado</div>
-        <div class="card-value"><?php echo $estado; ?></div>
+    <div class="employee-metrics-row">
+        <div class="metric-card role">
+            <span class="metric-icon"><span class="material-icons">badge</span></span>
+            <div class="metric-content">
+                <div class="metric-value"><?php echo htmlspecialchars($cargo); ?></div>
+                <div class="metric-title">Cargo</div>
+            </div>
+        </div>
+        <div class="metric-card status">
+            <span class="metric-icon"><span class="material-icons">verified_user</span></span>
+            <div class="metric-content">
+                <div class="metric-value"><?php echo $estado; ?></div>
+                <div class="metric-title">Estado</div>
+            </div>
+        </div>
     </div>
 </div>

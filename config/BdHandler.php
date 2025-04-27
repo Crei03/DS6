@@ -214,68 +214,6 @@ class DBHandler {
         }
     }
 
-    /**
-     * Elimina lógicamente un empleado: lo copia a la tabla de eliminados y lo marca como inactivo
-     * @param string $cedula Cédula del empleado a eliminar
-     * @return array Resultado con estado y mensaje
-     */
-    public function deleteEmployee($cedula) {
-        // Iniciar transacción para asegurar que ambas operaciones se completen
-        $this->conn->begin_transaction();
-        
-        try {
-            // 1. Obtener todos los datos del empleado
-            $stmt = $this->conn->prepare("SELECT * FROM empleados WHERE cedula = ?");
-            $stmt->bind_param("s", $cedula);
-            $stmt->execute();
-            $result = $stmt->get_result();
-            $empleado = $result->fetch_assoc();
-            $stmt->close();
-            
-            if (!$empleado) {
-                $this->conn->rollback();
-                return [
-                    "status" => "error",
-                    "message" => "Empleado no encontrado"
-                ];
-            }
-            
-            // 2. Insertar los datos en la tabla e_eliminados
-            $columns = array_keys($empleado);
-            $placeholders = implode(", ", array_fill(0, count($columns), "?"));
-            $values = array_values($empleado);
-            
-            $insert_sql = "INSERT INTO e_eliminados (" . implode(", ", $columns) . ") VALUES ($placeholders)";
-            $stmt = $this->conn->prepare($insert_sql);
-            $stmt->bind_param($this->getParamTypes($values), ...$values);
-            $stmt->execute();
-            $stmt->close();
-            
-            // 3. Actualizar el estado del empleado a 0 (inactivo)
-            $stmt = $this->conn->prepare("UPDATE empleados SET estado = 0 WHERE cedula = ?");
-            $stmt->bind_param("s", $cedula);
-            $stmt->execute();
-            $stmt->close();
-            
-            // Confirmar transacción
-            $this->conn->commit();
-            
-            return [
-                "status" => "ok",
-                "message" => "Empleado eliminado correctamente"
-            ];
-            
-        } catch (Exception $e) {
-            // Si hay error, revertir cambios
-            $this->conn->rollback();
-            
-            return [
-                "status" => "error",
-                "message" => "Error al eliminar empleado: " . $e->getMessage()
-            ];
-        }
-    }
-
     public function close() {
         if ($this->conn) {
             cerrarConexion($this->conn);

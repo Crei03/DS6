@@ -49,61 +49,74 @@ if ($resEmpleados['status'] === 'ok') {
     }
 }
 ?>
-<div class="dashboard-department-chart">
-    <div class="chart-bars">
-        <div class="chart-title">Empleados por departamento</div>
-        <div class="chart-bars">
-            <?php foreach ($departamentos as $dep): ?>
-                <div class="chart-bar-row">
-                    <span class="bar-label"><?php echo htmlspecialchars($dep['nombre']); ?></span>
-                    <div class="bar-outer">
-                        <div class="bar-inner" style="width: <?php echo ($dep['total'] > 0 ? min($dep['total'] * 18, 220) : 8); ?>px;"></div>
+<div class="stats-container">
+    <div class="dashboard-department-columns">
+        <!-- Columna 1: Empleados por departamento -->
+        <div class="dashboard-department-col">
+            <div class="chart-title">Empleados por departamento</div>
+            <div class="chart-bars">
+                <?php foreach ($departamentos as $dep): ?>
+                    <div class="chart-bar-row">
+                        <span class="bar-label"><?php echo htmlspecialchars($dep['nombre']); ?></span>
+                        <div class="bar-outer">
+                            <div class="bar-inner" style="width: <?php echo ($dep['total'] > 0 ? min($dep['total'] * 18, 220) : 8); ?>px;"></div>
+                        </div>
+                        <span class="bar-value"><?php echo $dep['total']; ?></span>
                     </div>
-                    <span class="bar-value"><?php echo $dep['total']; ?></span>
-                </div>
-            <?php endforeach; ?>
-            <?php if (empty($departamentos)): ?>
-                <div class="text-center">No hay datos de departamentos.</div>
-            <?php endif; ?>
-        </div>
-    </div>
-    <div class="dashboard-extra-stats">
-        <div class="gender-stats-row">
-            <div class="gender-stat masculino">
-                <span class="material-icons">male</span>
-                Hombres
-                <span class="extra-value"><?php echo $hombres; ?></span>
-            </div>
-            <div class="gender-stat femenino">
-                <span class="material-icons">female</span>
-                Mujeres
-                <span class="extra-value"><?php echo $mujeres; ?></span>
+                <?php endforeach; ?>
+                <?php if (empty($departamentos)): ?>
+                    <div class="text-center">No hay datos de departamentos.</div>
+                <?php endif; ?>
             </div>
         </div>
-        <div class="yearOld-stats-row">
-            <?php $totalEdad = $adulto_joven + $adulto_maduro + $adulto_mayor;
-            function percent($val, $total) { return $total > 0 ? round($val * 100 / $total) : 0; }
-            ?>
-            <div class="yearOld-bar">
-                <span class="yearOld-label">Adulto joven (18-35)</span>
-                <div class="yearOld-bar-outer">
-                    <div class="yearOld-bar-inner" style="width: <?php echo percent($adulto_joven, $totalEdad) * 1.8; ?>px;"></div>
+        <!-- Columna 2: Rango de edad -->
+        <div class="dashboard-department-col">
+            <div class="chart-title">Rango de edad</div>
+            <div class="yearOld-stats-row">
+                <?php $totalEdad = $adulto_joven + $adulto_maduro + $adulto_mayor;
+                function percent($val, $total) { return $total > 0 ? round($val * 100 / $total) : 0; }
+                ?>
+                <div class="yearOld-bar">
+                    <span class="yearOld-label">(18-35)</span>
+                    <div class="yearOld-bar-outer">
+                        <div class="yearOld-bar-inner" style="width: <?php echo percent($adulto_joven, $totalEdad) * 1.8; ?>px;"></div>
+                    </div>
+                    <span class="yearOld-value"><?php echo $adulto_joven; ?> (<?php echo percent($adulto_joven, $totalEdad); ?>%)</span>
                 </div>
-                <span class="yearOld-value"><?php echo $adulto_joven; ?> (<?php echo percent($adulto_joven, $totalEdad); ?>%)</span>
+                <div class="yearOld-bar">
+                    <span class="yearOld-label">(36-59)</span>
+                    <div class="yearOld-bar-outer">
+                        <div class="yearOld-bar-inner" style="width: <?php echo percent($adulto_maduro, $totalEdad) * 1.8; ?>px;"></div>
+                    </div>
+                    <span class="yearOld-value"><?php echo $adulto_maduro; ?> (<?php echo percent($adulto_maduro, $totalEdad); ?>%)</span>
+                </div>
+                <div class="yearOld-bar">
+                    <span class="yearOld-label">(60+)</span>
+                    <div class="yearOld-bar-outer">
+                        <div class="yearOld-bar-inner" style="width: <?php echo percent($adulto_mayor, $totalEdad) * 1.8; ?>px;"></div>
+                    </div>
+                    <span class="yearOld-value"><?php echo $adulto_mayor; ?> (<?php echo percent($adulto_mayor, $totalEdad); ?>%)</span>
+                </div>
             </div>
-            <div class="yearOld-bar">
-                <span class="yearOld-label">Adulto maduro (36-59)</span>
-                <div class="yearOld-bar-outer">
-                    <div class="yearOld-bar-inner" style="width: <?php echo percent($adulto_maduro, $totalEdad) * 1.8; ?>px;"></div>
+        </div>
+        <!-- Columna 3: Estadísticas de género -->
+        <div class="dashboard-department-col">
+            <div class="chart-title">Estadísticas de género</div>
+            <div class="gender-stats-row">
+                <div class="gender-stat masculino">
+                    <div class="gender-icon">
+                        <span class="material-icons">male</span>
+                    </div>
+                    <div class="gender-label">Hombres</div>
+                    <div class="gender-value"><?php echo $hombres; ?></div>
                 </div>
-                <span class="yearOld-value"><?php echo $adulto_maduro; ?> (<?php echo percent($adulto_maduro, $totalEdad); ?>%)</span>
-            </div>
-            <div class="yearOld-bar">
-                <span class="yearOld-label">Adulto mayor (60+)</span>
-                <div class="yearOld-bar-outer">
-                    <div class="yearOld-bar-inner" style="width: <?php echo percent($adulto_mayor, $totalEdad) * 1.8; ?>px;"></div>
+                <div class="gender-stat femenino">
+                    <div class="gender-icon">
+                        <span class="material-icons">female</span>
+                    </div>
+                    <div class="gender-label">Mujeres</div>
+                    <div class="gender-value"><?php echo $mujeres; ?></div>
                 </div>
-                <span class="yearOld-value"><?php echo $adulto_mayor; ?> (<?php echo percent($adulto_mayor, $totalEdad); ?>%)</span>
             </div>
         </div>
     </div>
