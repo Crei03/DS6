@@ -1,8 +1,8 @@
-# Proyecto FormoAntro - Sistema de Gestión de Empleados
+# Proyecto FormAntro - Sistema de Gestión de Empleados
 
 ## Descripción General
 
-FormoAntro es un sistema de gestión de empleados desarrollado para una pequeña empresa. El sistema proporciona funcionalidades CRUD (Crear, Leer, Actualizar y Eliminar) para la administración de empleados, incluyendo un sistema de autenticación de usuarios con diferentes niveles de acceso.
+FormAntro es un sistema de gestión de empleados desarrollado para una pequeña empresa. El sistema proporciona funcionalidades CRUD (Crear, Leer, Actualizar y Eliminar) para la administración de empleados, incluyendo un sistema de autenticación de usuarios con diferentes niveles de acceso.
 
 ## Funcionalidades Principales
 
